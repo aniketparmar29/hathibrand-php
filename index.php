@@ -15,8 +15,9 @@
 </head>
 
 <body>
-    <?php include './components/Navbar.html'?>
-    <?php include './components/Footer.html'?>
+    <?php include './components/Navbar.php'?>
+    <div>sadas</div>
+    <?php include './components/Footer.php'?>
 </body>
 
 </html>
