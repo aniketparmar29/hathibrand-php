@@ -41,7 +41,7 @@
     </style>
 </head>
 <body>
-    <div class="bottom-0 fixed w-[100%]">
+    <div class="bottom-0 relative w-[100%]">
         <footer class="footer pb-20 lg:pb-0 md-pb-0 text-center">
             <div class="mx-auto w-full container p-4 sm:p-6">
                 <div class="md:flex md:justify-between">

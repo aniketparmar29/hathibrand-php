@@ -16,7 +16,7 @@
 
 <body>
     <?php include './components/Navbar.php'?>
-    <div>sadas</div>
+    <?php include './Products.php'?>
     <?php include './components/Footer.php'?>
 </body>
 
