@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="flex flex-row justify-between items-center lg:sticky top-0 lg:px-5 px-2 bg-gray-200">
-        <img class="w-24" src="./assets/Logo/Favicon.ico" alt="">
+    <nav class="flex z-50 flex-row justify-between items-center lg:sticky top-0 lg:px-5 px-2 bg-gray-200">
+    <a href="./index.php"><img class="w-24" src="./assets/Logo/Favicon.ico" alt=""></a>
         <div class="relative">
             <input type="text" name="search" id="search" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pl-10" placeholder="Search...">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -20,8 +20,8 @@
 
         <!-- Desktop navigation menu -->
         <ul class="desktop-menu text-red-500 hidden md:flex lg:flex md:text-lg flex-row gap-x-5 text-xl">
-            <li class="hover:underline"><a href="">Home</a></li>
-            <li class="hover:underline"><a href="">Categories</a></li>
+            <li class="hover:underline"><a href="./index.php">Home</a></li>
+            <li class="hover:underline"><a href="./Products.php">Categories</a></li>
             <li class="hover:underline"><a href="">Cart</a></li>
             <li class="hover:underline"><a href="./Login.php">Login</a></li>
         </ul>
