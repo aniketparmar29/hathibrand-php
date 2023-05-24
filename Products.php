@@ -22,16 +22,17 @@
                 $productName = $row["name"];
                 $productImage = $row["image"];
                 $productPrice = $row["price"];
+                if($row["stock"]>0){
                 ?>
-
-                <div class="bg-white rounded-lg shadow-md p-4">
-                    <img src="<?php echo $productImage; ?>" alt="<?php echo $productName; ?>"
-                         class="object-contain h-48 w-full mb-4">
-                    <h2 class="text-lg font-bold mb-2"><?php echo $productName; ?></h2>
-                    <p class="text-gray-600">$<?php echo $productPrice; ?></p>
-                </div>
-
-                <?php
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <img src="<?php echo $productImage; ?>" alt="<?php echo $productName; ?>"
+                             class="object-contain h-48 w-full mb-4">
+                        <h2 class="text-lg font-bold mb-2"><?php echo $productName; ?></h2>
+                        <p class="text-gray-600">$<?php echo $productPrice; ?></p>
+                    </div>
+                    
+                    <?php
+                }
             }
         } else {
             echo "No products found.";
