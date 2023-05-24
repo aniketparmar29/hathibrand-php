@@ -1,5 +1,5 @@
 <?php
-    include('.\conn\dbconnection.php');
+    include('dbconnection.php');
 ?>
 
 <!DOCTYPE html>
@@ -16,8 +16,9 @@
 
 <body>
     <?php include './components/Navbar.php'?>
-    <?php include './Products.php'?>
+    <?php echo "helloworld" ?>
     <?php include './components/Footer.php'?>
+    <?php include './Products.php'?>
 </body>
 
 </html>
