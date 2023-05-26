@@ -69,9 +69,7 @@
 </head>
 <body >
     <?php include './components/Navbar.php'?>
-    <img src="./assets/bg-images/Login.jpg" class="z-0 imgop" alt="">
-    
-    <div class="container absolute  left-3  mt-8 z-10">
+    <div class="container">
         <div class="max-w-md  bg-white p-6 rounded-md shadow-md">
             <h2 class="text-2xl mb-4">Login</h2>
             <form method="POST" action="">
