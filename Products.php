@@ -6,7 +6,7 @@
     $category = isset($_GET['category']) ? $_GET['category'] : ''; // Filtering option: category
 
     // Construct the SQL query based on the sorting and filtering options
-    $sql = "SELECT * FROM products";
+    $sql = "SELECT * FROM categories";
     if ($category !== '') {
         $sql .= " WHERE category = '$category'";
     }
