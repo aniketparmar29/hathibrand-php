@@ -20,11 +20,11 @@
 
         <!-- Desktop navigation menu -->
         <ul class="desktop-menu text-red-500 hidden md:flex lg:flex md:text-lg flex-row gap-x-5 text-xl">
-            <li class="hover:underline"><a href="./index.php">Home</a></li>
-            <li class="hover:underline"><a href="./Products.php">Categories</a></li>
+            <li class="hover:underline"><a href="index.php">Home</a></li>
+            <li class="hover:underline"><a href="Products.php">Categories</a></li>
             <li class="hover:underline"><a href="cart.php"><i class="fa fa-shopping-cart"></i></a></li>
             <li class="hover:underline"><a href="wishlist.php"><i class="fa fa-heart"></i></a></li>
-            <li class="hover:underline"><a href="./Login.php">Login</a></li>
+            <li class="hover:underline"><a href="Login.php">Login</a></li>
         </ul>
     </nav>
 
@@ -32,13 +32,13 @@
 <div id="search-results"></div>
     <section class="fixed mobile-menu block lg:hidden md:hidden bottom-0 inset-x-0 z-50 shadow-lg bg-gray-700 dark:bg-dark backdrop-blur-lg bg-opacity-30 dark:bg-opacity-30 border-t-2 border-royal/20">
         <div id="tabs" class="flex justify-between">
-            <a href="/" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
+            <a href="index.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
                 <div class="h-6 w-6 inline-block mb-1">
                     <i class="fa-solid text-red-500 fa-house"></i>
                 </div>
                 <span class="tab block text-xs font-extrabold text-yellow-600">Home</span>
             </a>
-            <a href="/products" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
+            <a href="Products.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
                 <div class="h-6 w-6 inline-block mb-1">
                     <i class="fa-solid text-red-500 fa-dumpster"></i>
                 </div
