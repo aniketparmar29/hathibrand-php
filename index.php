@@ -44,32 +44,33 @@ while ($row = mysqli_fetch_assoc($result)) {
     // Check if the product is already in the wishlist
   
     ?>
-<div class="bg-white shadow-lg rounded-lg p-6 relative overflow-hidden">
-  <?php if (!empty($productImage[0])) { ?>
-    <img src="./Admin/<?php echo $productImage[0]; ?>" alt="Product Image">
-  <?php } ?>
-  <div class="mt-4">
-    <h2 class="text-xl font-semibold"><?php echo $productName; ?></h2>
-    <p class="text-lg mt-2">Weight:<?php echo $productWeight; ?></p>
-    <div class="flex justify-between items-center mt-4">
-      <span class="text-gray-600">
-        <i class="fas fa-rupee-sign"></i> <?php echo $productPrice; ?>
-      </span>
-      <div class="flex items-center space-x-2 absolute top-2 right-0">
-          <button class="text-red-500  transition-colors duration-300"
-            title="Add to Wishlist"
-            onclick="addToWishlist(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')">
-            <i class="far fa-heart text-2xl hover:fa"></i>
-          </button>
-        
+ <div class="bg-white shadow-lg rounded-lg p-6 relative overflow-hidden">
+            <?php if (!empty($productImage[0])) { ?>
+                <a href="singleProduct.php?id=<?php echo $productID; ?>">
+                    <img src="./Admin/<?php echo $productImage[0]; ?>" alt="Product Image">
+                </a>
+            <?php } ?>
+            <div class="mt-4">
+                <h2 class="text-xl font-semibold"><?php echo $productName; ?></h2>
+                <p class="text-lg mt-2">Weight:<?php echo $productWeight; ?></p>
+                <div class="flex justify-between items-center mt-4">
+                    <span class="text-gray-600">
+                        <i class="fas fa-rupee-sign"></i> <?php echo $productPrice; ?>
+                    </span>
+                    <div class="flex items-center space-x-2 absolute top-2 right-0">
+                        <button class="text-red-500  transition-colors duration-300"
+                            title="Add to Wishlist"
+                            onclick="addToWishlist(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')">
+                            <i class="far fa-heart text-2xl hover:fa"></i>
+                        </button>
+                    </div>
+                    <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300"
+                        title="Add to Cart">
+                        <i class="fas fa-shopping-cart text-2xl "></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300"
-          title="Add to Cart">
-          <i class="fas fa-shopping-cart text-2xl "></i>
-        </button>
-    </div>
-  </div>
-</div>
 
 <?php
 }
