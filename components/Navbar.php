@@ -29,7 +29,7 @@
     </nav>
 
     
-<div id="search-results"></div>
+<div id="search-results"> </div>
     <section class="fixed mobile-menu block lg:hidden md:hidden bottom-0 inset-x-0 z-50 shadow-lg bg-gray-700 dark:bg-dark backdrop-blur-lg bg-opacity-30 dark:bg-opacity-30 border-t-2 border-royal/20">
         <div id="tabs" class="flex justify-between">
             <a href="index.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
