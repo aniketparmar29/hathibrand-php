@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,6 +9,7 @@
     <title>Add Products</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container mx-auto mt-8">
         <h1 class="text-2xl mb-4 text-center">Product Management</h1>
@@ -48,73 +50,74 @@
                 </form>
             </div>
             <?php
-include('../dbconnection.php');
+            include('../dbconnection.php');
 
-// Check if the form is submitted
-if (isset($_POST['add_product'])) {
-    // Retrieve form data
-    $product_name = $_POST['product_name'];
-    $product_stock = $_POST['product_stock'];
-    $product_weight = $_POST['product_weight'];
-    $product_desc = $_POST['product_desc'];
-    $product_Category = $_POST['product_category'];
-    $product_price = $_POST['product_price'];
+            // Check if the form is submitted
+            if (isset($_POST['add_product'])) {
+                // Retrieve form data
+                $product_name = $_POST['product_name'];
+                $product_stock = $_POST['product_stock'];
+                $product_weight = $_POST['product_weight'];
+                $product_desc = $_POST['product_desc'];
+                $product_Category = $_POST['product_category'];
+                $product_price = $_POST['product_price'];
 
-    // Format date as dd/mm/yyyy
-    $current_date = date('d/m/Y');
+                // Format date as dd/mm/yyyy
+                $current_date = date('d/m/Y');
 
-    // Create a folder for the product
-    $product_folder = 'assets/product/' . str_replace(' ', '', $product_name);
-    if (!is_dir($product_folder)) {
-        mkdir($product_folder, 0777, true);
-    }
+                // Create a folder for the product
+                $product_folder = 'assets/product/' . str_replace(' ', '', $product_name);
+                if (!is_dir($product_folder)) {
+                    mkdir($product_folder, 0777, true);
+                }
 
-    // Process image uploads
-    $image_paths = array();
+                // Process image uploads
+                $image_paths = array();
 
-    foreach ($_FILES['product_images']['tmp_name'] as $key => $tmp_name) {
-        $file_name = $_FILES['product_images']['name'][$key];
-        $file_tmp = $_FILES['product_images']['tmp_name'][$key];
-        $file_type = $_FILES['product_images']['type'][$key];
-        $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
-        $file_path = $product_folder . '/' . $file_name;
+                foreach ($_FILES['product_images']['tmp_name'] as $key => $tmp_name) {
+                    $file_name = $_FILES['product_images']['name'][$key];
+                    $file_tmp = $_FILES['product_images']['tmp_name'][$key];
+                    $file_type = $_FILES['product_images']['type'][$key];
+                    $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
+                    $file_path = $product_folder . '/' . $file_name;
 
-        // Move the uploaded image to the product folder
-        move_uploaded_file($file_tmp, $file_path);
+                    // Move the uploaded image to the product folder
+                    move_uploaded_file($file_tmp, $file_path);
 
-        // Add the image path to the array
-        $image_paths[] = $file_path;
-    }
+                    // Add the image path to the array
+                    $image_paths[] = $file_path;
+                }
 
-    $sql = "INSERT INTO categories (product_name, product_stock, product_weight, product_category, product_desc, product_price, product_date, product_images) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        die("Prepared statement error: " . $conn->error);
-    }
+                $sql = "INSERT INTO categories (product_name, product_stock, product_weight, product_category, product_desc, product_price, product_date, product_images) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                if (!$stmt) {
+                    die("Prepared statement error: " . $conn->error);
+                }
 
-    // Convert the image paths array to a comma-separated string
-    $image_paths_string = implode(',', $image_paths);
+                // Convert the image paths array to a comma-separated string
+                $image_paths_string = implode(',', $image_paths);
 
-    $stmt->bind_param("sissssss", $product_name, $product_stock, $product_weight, $product_Category, $product_desc, $product_price, $current_date, $image_paths_string);
-    $stmt->execute();
-    $stmt->close();
+                $stmt->bind_param("sissssss", $product_name, $product_stock, $product_weight, $product_Category, $product_desc, $product_price, $current_date, $image_paths_string);
+                $stmt->execute();
+                $stmt->close();
 
-    // Close the database connection
-    $conn->close();
+                // Close the database connection
+                $conn->close();
 
-    // Redirect the user to a different page
-    header("Location: product_listing.php");
-    exit();
-}
-?>
+                // Redirect the user to a different page
+                header("Location: product_listing.php");
+                exit();
+            }
+            ?>
 
-<!-- Establish a database connection -->
+            <!-- Establish a database connection -->
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-</div>
+    </div>
 
 </body>
+
 </html>
