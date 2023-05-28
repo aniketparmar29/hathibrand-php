@@ -1,5 +1,12 @@
 <?php
     include('.\conn\dbconnection.php');
+    if($conn)
+    {
+        echo "connection successfully";
+    }
+    else{
+        echo "failed";
+    }
 ?>
 
 <!DOCTYPE html>
