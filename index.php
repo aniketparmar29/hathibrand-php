@@ -17,7 +17,7 @@
 </head>
 
 <body>
-    <?php include './components/Navbar.php'?>
+    <?php require './components/Navbar.php'?>
 
     <div class="container mx-auto grid gap-8 grid-cols-2 lg:grid-cols-4">
     <?php

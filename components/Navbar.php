@@ -24,7 +24,7 @@
             <li class="hover:underline"><a href="Products.php">Categories</a></li>
             <li class="hover:underline"><a href="cart.php"><i class="fa fa-shopping-cart"></i></a></li>
             <li class="hover:underline"><a href="wishlist.php"><i class="fa fa-heart"></i></a></li>
-            <li class="hover:underline"><a href="Login.php">Login</a></li>
+            <li class="hover:underline"><a href="login.php">Login</a></li>
         </ul>
     </nav>
 

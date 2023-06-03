@@ -1,130 +1,66 @@
+
 <?php
-// Include the database connection file
-include('dbconnection.php');
+require_once 'dbconnection.php'; // Include the file with the database connection
 
-// Start a session
-// session_start(); 
+// Check if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve form data
+    $username = $_POST["username"];
+    $email = $_POST["email"];
+    $mobile = $_POST["mobile"];
+    $password = $_POST["password"];
 
-// Check if the user clicked the signup button
-if (isset($_POST['submit'])) {
-    // Retrieve the user's input
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $mobile = $_POST['mobile'];
-    $password = $_POST['password'];
-
-    // Check if email already exists
-    $check_email_query = "SELECT email FROM user WHERE email = '$email'";
-    $check_email_query_run = mysqli_query($conn, $check_email_query);
-
-    if (mysqli_num_rows($check_email_query_run) > 0) {
-        $_SESSION['error'] = "Email already exists";
-        header('Location: signUp.php');
-        exit();
-    } else {
-        $insert_query = "INSERT INTO user (username, email, mobile, password) VALUES ('$username', '$email', '$mobile', '$password')";
-        $insert_query_run = mysqli_query($conn, $insert_query);
-
-        if ($insert_query_run) {
-            $_SESSION['success'] = "Account created successfully!";
-            header('Location: login.php');
-            exit();
-        } else {
-            $_SESSION['error'] = "Error creating account";
-            header('Location: signUp.php');
-            exit();
-        }
+    // Validate mobile number
+    if (!preg_match("/^\d{10}$/", $mobile)) {
+        die("Error: Mobile number should have 10 digits.");
     }
-}
 
-// Check if the user clicked the Google login button
-if (isset($_POST['google_login'])) {
-    // Redirect the user to the Google login page
-    header("Location: google_login.php");
-    exit();
-}
+    // Encrypt the password (you can use any suitable encryption method)
+    $encryptedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-// Check if the user clicked the Facebook login button
-if (isset($_POST['facebook_login'])) {
-    // Redirect the user to the Facebook login page
-    header("Location: facebook_login.php");
-    exit();
+    // Check if the email is already registered
+    $checkQuery = "SELECT * FROM `user` WHERE `email` = '$email'";
+    $checkResult = mysqli_query($conn, $checkQuery);
+
+    if (mysqli_num_rows($checkResult) > 0) {
+        die("Error: Email is already registered.");
+    }
+
+    // Prepare and execute the query
+    $query = "INSERT INTO `user`(`username`, `role`, `email`, `mobile`, `password`, `created_at`) 
+              VALUES ('$username', 'user', '$email', '$mobile', '$encryptedPassword', NOW())";
+    $result = mysqli_query($conn, $query);
+
+    // Check if the query was successful
+    if ($result) {
+        echo "Signup successful!";
+    } else {
+        echo "Error occurred while signing up.";
+    }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="shortcut icon" href="./assets/Logo/Favicon.ico" type="image/x-icon">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login-Hathibrand</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .container {
-            top: 200px;
-        }
-
-        .imgop {
-            height: 120vh;
-            width: 100%;
-        }
-    </style>
-
+    <title>Signup-Hathibrand</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
 
 </head>
-
 <body>
-    <?php include './components/Navbar.php' ?>
-    <div class="container">
-        <div class="max-w-md  bg-white p-6 rounded-md shadow-md">
-            <h2 class="text-2xl mb-4">Login</h2>
-            <form method="POST" action="">
-                <div class="mb-4">
-                    <label class="block mb-2">Username:</label>
-                    <input type="text" name="username" id="username" class="border rounded px-4 py-2 w-full" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Email</label>
-                    <input type="email" name="email" id="email" class="border rounded px-4 py-2 w-full" required>
-                    <?php
-                    if (isset($_SESSION['error'])) {
-                    ?>
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            <strong>Hey </strong><?= $_SESSION['error']; ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php
-                        unset($_SESSION['error']);
-                    }
-                    ?>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Mobile</label>
-                    <input type="text" name="mobile" id="mobile" class="border rounded px-4 py-2 w-full" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Password</label>
-                    <input type="password" name="password" id="password" class="border rounded px-4 py-2 w-full" required>
-                </div>
-                <button type="submit" name="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Sign Up</button>
-                <div class="flex items-center justify-between mt-4">
-                    <a href="login.php" name="signup" class="text-blue-500">Login</a>
-                    <div>
-                        <div class="mt-2">
-                        </div>
-                    </div>
-                </div>
-            </form>
-            <span>or sign up with:</span>
-            <button type="submit" name="google_login" class="bg-red-500 text-white px-4 py-2 rounded">Google</button>
-            <button type="submit" name="facebook_login" class="bg-blue-500 text-white px-4 py-2 rounded">Facebook</button>
-        </div>
-    </div>
-    <?php include './components/Footer.php' ?>
-</body>
+<?php include './components/Navbar.php'?>
 
+    <div class="container mx-auto p-12 shadow-lg shadow-red-200">
+        <h2 class="text-2xl font-bold mb-4 text-center">Signup Form</h2>
+        <form method="POST" action="signup.php" class="max-w-sm mx-auto">
+            <input type="text" name="username" placeholder="Username" required class="w-full px-4 py-2 rounded border-gray-300 mb-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+            <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 rounded border-gray-300 mb-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+            <input type="text" name="mobile" placeholder="Mobile (10 digits)" required class="w-full px-4 py-2 rounded border-gray-300 mb-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+            <input type="password" name="password" placeholder="Password" required class="w-full px-4 py-2 rounded border-gray-300 mb-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+            <button type="submit" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">Signup</button>
+        </form>
+    </div>
+<?php include './components/Footer.php'?>
+
+</body>
 </html>
