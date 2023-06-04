@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,7 @@
     <title>Document</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
 </head>
 <body>
     <nav class="flex z-50 flex-row justify-between items-center lg:sticky top-0 lg:px-5 px-2 bg-gray-200">
@@ -24,7 +26,41 @@
             <li class="hover:underline"><a href="Products.php">Categories</a></li>
             <li class="hover:underline"><a href="cart.php"><i class="fa fa-shopping-cart"></i></a></li>
             <li class="hover:underline"><a href="wishlist.php"><i class="fa fa-heart"></i></a></li>
+            <?php
+              if (isset($_SESSION['auth'])) {
+              ?>
+               
+               
+<button id="dropdownHoverButton" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="hover" class="flex flex-row gap-x-1 items-center" type="button"><p class="nav-item"> <?= $_SESSION['username']; ?></p><i class="fa-solid fa-caret-down ps-1"></i></button>
+<!-- Dropdown menu -->
+<div id="dropdownHover" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownHoverButton">
+      <li>
+        <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
+      </li>
+      <?php
+if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") {
+?>
+  <li>
+    <a href="./Admin/admin.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Admin</a>
+  </li>
+<?php 
+}
+?>
+
+      <li>
+        <a href="./logout.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Logout</a>
+      </li>
+    </ul>
+</div>
+
+               <?php
+              } else {
+              ?>
             <li class="hover:underline"><a href="login.php">Login</a></li>
+            <?php
+              }
+              ?>
         </ul>
     </nav>
 
