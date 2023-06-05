@@ -1,11 +1,10 @@
 <?php
     include "../dbconnection.php";
-    if (isset($_SESSION['role']) && $_SESSION['role'] !== "admin") {
-        echo "op";
-        header('../index.php');
-    }else{
-
-    }
+    if (!isset($_SESSION['auth']) || $_SESSION['role'] !== "admin") {
+      echo "op";
+      header('Location: ../index.php');
+      exit(); // It's recommended to include an exit() statement after a header redirect
+  }
 
 ?>
 
