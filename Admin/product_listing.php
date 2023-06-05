@@ -1,6 +1,14 @@
 <?php
 include('../dbconnection.php');
 
+
+   if (!isset($_SESSION['auth']) || $_SESSION['role'] !== "admin") {
+      echo "op";
+      header('Location: ../index.php');
+      exit(); // It's recommended to include an exit() statement after a header redirect
+  }
+
+
 // Check if the delete button is clicked
 if (isset($_GET['delete_product'])) {
     $productID = $_GET['delete_product'];
@@ -8,9 +16,7 @@ if (isset($_GET['delete_product'])) {
     // Delete the product from the database
     $deleteQuery = "DELETE FROM categories WHERE id = ?";
     $stmt = $conn->prepare($deleteQuery);
-    if (!$stmt) {
-        die("Prepared statement error: " . $conn->error);
-    }
+    
     $stmt->bind_param("i", $productID);
     $stmt->execute();
     $stmt->close();

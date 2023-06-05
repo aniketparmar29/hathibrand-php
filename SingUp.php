@@ -6,24 +6,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $mobile = $_POST['mobile'];
     $password = $_POST['password'];
-
+    
     // Check if mobile or email already exists in the database
     $checkQuery = "SELECT * FROM user WHERE mobile = '$mobile' OR email = '$email'";
     $result = mysqli_query($conn, $checkQuery);
     if (mysqli_num_rows($result) > 0) {
         $error = "Mobile or email already exists";
-    } else {
+    } else {    
         // Encrypt the password before storing in the database
         $encryptedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert the new user into the database
         $insertQuery = "INSERT INTO user (username, email, mobile, password, role) VALUES ('$username', '$email', '$mobile', '$encryptedPassword', 'user')";
+        // ...
         if (mysqli_query($conn, $insertQuery)) {
             // Redirect to the login page
             header("Location: login.php");
             exit();
         } else {
-            $error = "Error occurred while creating an account";
+            $error = "Error occurred while creating an account: " . mysqli_error($conn);
         }
     }
 }
@@ -65,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div>
                             <label for="mobile" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mobile</label>
-                            <input type="text" name="mobile" id="mobile" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" required>
+                            <input type="number" name="mobile" id="mobile" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" required>
                         </div>
                         <div>
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
