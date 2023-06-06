@@ -71,42 +71,42 @@ if (isset($_GET['id'])) {
     <link rel="shortcut icon" href="../assets/Logo/Favicon.ico" type="image/x-icon">
     <title>Edit Product</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flowbite/css/flowbite.css" rel="stylesheet">
 </head>
 <body>
-<div class="container mx-auto mt-8">
+<div class="mt-8 shadow-md shadow-red p-4  lg:w-60 md:w-60 lg:mx-auto md:mx-auto mx-2">
         <h1 class="text-2xl mb-4 text-center">Edit Product</h1>
-        <form class="flex flex-col justify-center items-center p-10 shadow-lg shadow-red-500 " method="POST">
+        <form class="flex flex-col justify-center items-center" method="POST">
             <input type="hidden" name="product_id" value="<?php echo $productID; ?>">
             <div class="mb-4">
                 <label for="product_name" class="block">Product Name</label>
-                <input type="text" name="product_name" id="product_name" class="w-full  rounded-md" value="<?php echo $product['product_name']; ?>" required>
+                <input type="text" name="product_name" id="product_name" class="w-full rounded-md fb-input" value="<?php echo $product['product_name']; ?>" required>
             </div>
             <div class="mb-4">
                 <label for="product_stock" class="block">Stock</label>
-                <input type="number" name="product_stock" id="product_stock" class="w-full  rounded-md" value="<?php echo $product['product_stock']; ?>" required>
+                <input type="number" name="product_stock" id="product_stock" class="w-full rounded-md fb-input" value="<?php echo $product['product_stock']; ?>" required>
             </div>
             <div class="mb-4">
                 <label for="product_weight" class="block">Weight</label>
-                <input type="text" name="product_weight" id="product_weight" class="w-full  rounded-md" value="<?php echo $product['product_weight']; ?>" required>
+                <input type="text" name="product_weight" id="product_weight" class="w-full rounded-md fb-input" value="<?php echo $product['product_weight']; ?>" required>
             </div>
             <div class="mb-4">
                 <label for="product_desc" class="block">Description</label>
-                <textarea name="product_desc" id="product_desc" class="w-full  rounded-md" required><?php echo $product['product_desc']; ?></textarea>
+                <textarea name="product_desc" id="product_desc" class="w-full rounded-md fb-textarea" required><?php echo $product['product_desc']; ?></textarea>
             </div>
             <div class="mb-4">
                 <label for="product_category" class="block">Category</label>
-                <input type="text" name="product_category" id="product_category" class="w-full  rounded-md" required><?php echo $product['product_category']; ?></input>
+                <input type="text" name="product_category" id="product_category" class="w-full rounded-md fb-input" value="<?php echo $product['product_category']; ?>" required/>
             </div>
             <div class="mb-4">
                 <label for="product_price" class="block">Price</label>
-                <input type="number" name="product_price" id="product_price" class="w-full  rounded-md" value="<?php echo $product['product_price']; ?>" required>
+                <input type="number" name="product_price" id="product_price" class="w-full rounded-md fb-input" value="<?php echo $product['product_price']; ?>" required>
             </div>
             <div>
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Update</button>
-                <a href="product_listing.php" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Cancel</a>
+                <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded fb-btn transition duration-300 ease-in-out">Update</button>
+                <a href="product_listing.php" class="bg-gray-500 text-white px-4 py-2 rounded fb-btn transition duration-300 ease-in-out">Cancel</a>
             </div>
         </form>
     </div>
 </body>
 </html>
-
