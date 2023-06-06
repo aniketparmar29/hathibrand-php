@@ -168,6 +168,8 @@ if (isset($_GET['id'])) {
     } else if (weight === 250) {
         weight = 500;
     } else if (weight === 500) {
+        weight = 750;
+    }  else if (weight === 750) {
         weight = 1;
     } else {
         weight++;
@@ -180,16 +182,17 @@ function decreaseWeight() {
     var weightElement = document.querySelector('.wightop');
     var weight = parseInt(weightElement.textContent);
 
-    if (weight === 100) {
-        alert("Minimum order should be 100 Grams")
+    if (weight === 250) {
+        alert("Minimum order should be 250 Grams")
         return;
 
-    } else if (weight === 250) {
-        weight = 100;
-    } else if (weight === 500) {
+    }else if (weight === 500) {
         weight = 250;
-    } else if (weight === 1) {
+    }
+    else if (weight === 750) {
         weight = 500;
+    } else if (weight === 1) {
+        weight = 750;
     } else if (weight === 2) {
         weight = 1;
     } else if (weight === 3) {
