@@ -6,6 +6,7 @@ if (!isset($_SESSION['auth']) || $_SESSION['role'] !== "admin") {
     header('Location: ../index.php');
     exit(); // It's recommended to include an exit() statement after a header redirect
 }
+
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the product ID from the form
@@ -61,7 +62,6 @@ if (isset($_GET['id'])) {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,39 +74,45 @@ if (isset($_GET['id'])) {
     <link href="https://cdn.jsdelivr.net/npm/flowbite/css/flowbite.css" rel="stylesheet">
 </head>
 <body>
-<div class="mt-8 shadow-md shadow-red p-4  lg:w-60 md:w-60 lg:mx-auto md:mx-auto mx-2">
+    <div class="mt-8 shadow-md shadow-red p-4 lg:w-60 md:w-60 lg:mx-auto md:mx-auto mx-2">
         <h1 class="text-2xl mb-4 text-center">Edit Product</h1>
-        <form class="flex flex-col justify-center items-center" method="POST">
-            <input type="hidden" name="product_id" value="<?php echo $productID; ?>">
-            <div class="mb-4">
-                <label for="product_name" class="block">Product Name</label>
-                <input type="text" name="product_name" id="product_name" class="w-full rounded-md fb-input" value="<?php echo $product['product_name']; ?>" required>
-            </div>
-            <div class="mb-4">
-                <label for="product_stock" class="block">Stock</label>
-                <input type="number" name="product_stock" id="product_stock" class="w-full rounded-md fb-input" value="<?php echo $product['product_stock']; ?>" required>
-            </div>
-            <div class="mb-4">
-                <label for="product_weight" class="block">Weight</label>
-                <input type="text" name="product_weight" id="product_weight" class="w-full rounded-md fb-input" value="<?php echo $product['product_weight']; ?>" required>
-            </div>
-            <div class="mb-4">
-                <label for="product_desc" class="block">Description</label>
-                <textarea name="product_desc" id="product_desc" class="w-full rounded-md fb-textarea" required><?php echo $product['product_desc']; ?></textarea>
-            </div>
-            <div class="mb-4">
-                <label for="product_category" class="block">Category</label>
-                <input type="text" name="product_category" id="product_category" class="w-full rounded-md fb-input" value="<?php echo $product['product_category']; ?>" required/>
-            </div>
-            <div class="mb-4">
-                <label for="product_price" class="block">Price</label>
-                <input type="number" name="product_price" id="product_price" class="w-full rounded-md fb-input" value="<?php echo $product['product_price']; ?>" required>
-            </div>
-            <div>
-                <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded fb-btn transition duration-300 ease-in-out">Update</button>
-                <a href="product_listing.php" class="bg-gray-500 text-white px-4 py-2 rounded fb-btn transition duration-300 ease-in-out">Cancel</a>
-            </div>
-        </form>
+        <form class="flex flex-col justify-center items-center" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="product_id" value="<?php echo $productID; ?>">
+    <div class="mb-4">
+        <label for="product_name" class="block">Product Name</label>
+        <input type="text" name="product_name" id="product_name" value="<?php echo $product['product_name']; ?>" required>
     </div>
+    <div class="mb-4">
+        <label for="product_stock" class="block">Stock</label>
+        <input type="number" name="product_stock" id="product_stock" value="<?php echo $product['product_stock']; ?>" required>
+    </div>
+    <div class="mb-4">
+        <label for="product_weight" class="block">Weight</label>
+        <input type="text" name="product_weight" id="product_weight" value="<?php echo $product['product_weight']; ?>" required>
+    </div>
+    <div class="mb-4">
+        <label for="product_desc" class="block">Description</label>
+        <textarea name="product_desc" id="product_desc" rows="4" required><?php echo $product['product_desc']; ?></textarea>
+    </div>
+    <div class="mb-4">
+        <label for="product_category" class="block">Category</label>
+        <select name="product_category" id="product_category" required>
+                <option value="">Select a category</option>
+                <option value="Agarbatti" <?php echo ($product['product_category'] === 'Agarbatti') ? 'selected' : ''; ?>>Agarbatti</option>
+                <option value="Cosmetics" <?php echo ($product['product_category'] === 'Cosmetics') ? 'selected' : ''; ?>>Cosmetics</option>
+        </select>
+    </div>
+    <div class="mb-4">
+        <label for="product_price" class="block">Price</label>
+        <input type="number" name="product_price" id="product_price" value="<?php echo $product['product_price']; ?>" step="0.01" required>
+    </div>
+    
+    <div class="mt-4">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            Update Product
+        </button>
+    </div>
+</form>
+</div>
 </body>
 </html>
