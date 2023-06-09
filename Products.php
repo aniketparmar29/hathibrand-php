@@ -34,8 +34,8 @@ $result = $conn->query($sql);
 <head>
     <title>Products Page</title>
     <link rel="shortcut icon" href="./assets/Logo/Favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
     <?php include './components/Navbar.php'?>
@@ -98,10 +98,11 @@ $result = $conn->query($sql);
                             <i class="far fa-heart text-2xl hover:fa"></i>
                         </button>
                     </div>
-                    <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300"
-                        title="Add to Cart">
-                        <i class="fas fa-shopping-cart text-2xl "></i>
+                    <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300" title="Add to Cart"
+                        onclick="addToCart(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')">
+                        <i class="fas fa-shopping-cart text-2xl"></i>
                     </button>
+
                 </div>
             </div>
         </div>
@@ -117,6 +118,55 @@ $result = $conn->query($sql);
 </body>
 </html>
 <script>
+    function addToCart(productID, productName, productImage, productWeight, productPrice) {
+        // Check if localStorage is available
+        if (typeof (Storage) !== "undefined") {
+            // Retrieve existing cart items from localStorage
+            var cartItems = localStorage.getItem("cart");
+            var cart = [];
+
+            if (cartItems !== null) {
+                cart = JSON.parse(cartItems);
+            }
+
+            // Check if the product is already in the cart
+            var existingProduct = cart.find(function (item) {
+                return item.id === productID;
+            });
+
+            if (existingProduct) {
+                // Product already in the cart, increase the weight
+                existingProduct.weight += parseFloat(productWeight);
+
+                // Save the updated cart back to localStorage
+                localStorage.setItem("cart", JSON.stringify(cart));
+
+                // Provide feedback to the user
+                alert("Product weight increased in the cart!");
+            } else {
+                // Add the product to the cart
+                var newProduct = {
+                    id: productID,
+                    name: productName,
+                    image: productImage,
+                    weight: parseFloat(productWeight),
+                    price: productPrice
+                };
+
+                cart.push(newProduct);
+
+                // Save the updated cart back to localStorage
+                localStorage.setItem("cart", JSON.stringify(cart));
+
+                // Provide feedback to the user
+                alert("Product added to the cart!");
+            }
+        } else {
+            // localStorage is not available
+            alert("Your browser does not support localStorage");
+        }
+    }
+
     function addToWishlist(productID, productName, productImage, productWeight, productPrice) {
         // Get the product details
         var productDetails = {
