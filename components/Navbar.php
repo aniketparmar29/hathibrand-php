@@ -67,34 +67,72 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") {
 
     
 <div id="search-results"> </div>
-    <section class="fixed mobile-menu block lg:hidden md:hidden bottom-0 inset-x-0 z-50 shadow-lg bg-gray-700 dark:bg-dark backdrop-blur-lg bg-opacity-30 dark:bg-opacity-30 border-t-2 border-royal/20">
+    <section class="fixed mobile-menu block lg:hidden md:hidden bottom-0 inset-x-0 z-50 shadow-lg bg-white dark:bg-dark  border-t-2 border-royal/20">
         <div id="tabs" class="flex justify-between">
-            <a href="index.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
+            <a href="index.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-gray-200">
                 <div class="h-6 w-6 inline-block mb-1">
                     <i class="fa-solid text-red-500 fa-house"></i>
                 </div>
                 <span class="tab block text-xs font-extrabold text-yellow-600">Home</span>
             </a>
-            <a href="Products.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
+            <a href="Products.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-gray-200">
                 <div class="h-6 w-6 inline-block mb-1">
                     <i class="fa-solid text-red-500 fa-dumpster"></i>
                 </div
 >
                         <span class="tab block text-xs font-extrabold text-yellow-600">Categories</span>
                       </a>
-                      <a href="cart.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1  hover:bg-white">
+                      <a href="cart.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1  hover:bg-gray-200">
                         <div class="h-6 w-6 inline-block mb-1">
                             <i class="fa-solid text-red-500 fa-cart-shopping"></i>
                         </div>
                         <span class="tab block text-xs font-extrabold text-yellow-600">Cart <span>0</span></span>
                       </a>
-                       
-                        <a href="login.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-white">
+                      <?php
+if (isset($_SESSION['auth'])) {
+?>
+<button  class=" gap-x-1 items-center w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-gray-200" type="button" onclick="openDropdown(event,'dropdown-id')">
+<div class="h-6 w-6 inline-block mb-1">
+          <i class="fa-solid text-red-500 fa-user"></i>
+  </div>    
+  <div>
+    <p class="nav-item tab block text-xs font-extrabold text-yellow-600"><?= $_SESSION['username']; ?></p>
+  </div>
+</button>
+<!-- Dropdown menu -->
+<div id="dropdown-id" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownHoverButton">
+        <li>
+            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
+        </li>
+        <?php
+        if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") {
+        ?>
+            <li>
+                <a href="./Admin/admin.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Admin</a>
+            </li>
+        <?php 
+        }
+        ?>
+        <li>
+            <a href="./logout.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Logout</a>
+        </li>
+    </ul>
+</div>
+<?php
+              } else {
+              ?>
+                        <a href="login.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-gray-200">
                             <div class="h-6 w-6 inline-block mb-1">
                                 <i class="fa-solid text-red-500 fa-user"></i>
                             </div>
+
+                            
                           <span class="tab block text-xs font-extrabold text-yellow-600">Login</span>
                         </a>
+                        <?php
+              }
+              ?>
                     </div>
                   </section>
                   
@@ -140,8 +178,20 @@ function makeRequest() {
 }
 
 
+function openDropdown(event, dropdownID) {
+        let element = event.target;
+        while (element.nodeName !== "BUTTON") {
+            element = element.parentNode;
+        }
+        var popper = Popper.createPopper(element, document.getElementById(dropdownID), {
+            placement: 'top-end'
+        });
+        document.getElementById(dropdownID).classList.toggle("hidden");
+        document.getElementById(dropdownID).classList.toggle("block");
+    }
 
 </script>
 
 </body>
 </html>
+<script src="https://unpkg.com/@popperjs/core@2.9.1/dist/umd/popper.min.js" charset="utf-8"></script>

@@ -139,4 +139,21 @@ mysqli_close($conn);
   }
 }
 
+        // Display the session message as an alert
+        $(document).ready(function() {
+            // Make an AJAX request to fetch the session message
+            $.ajax({
+                url: 'fetch_message.php',
+                type: 'GET',
+                success: function(data) {
+                    if (data !== '') {
+                        // Display the session message as an alert
+                        alert(data);
+                    }
+                }
+            });
+        });
 </script>
+<script src="https://unpkg.com/@popperjs/core@2.9.1/dist/umd/popper.min.js" charset="utf-8"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   
