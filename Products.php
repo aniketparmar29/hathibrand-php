@@ -136,8 +136,15 @@ $result = $conn->query($sql);
 
             if (existingProduct) {
                 // Product already in the cart, increase the weight
-                existingProduct.weight += parseFloat(productWeight);
-
+                if(existingProduct.weight>=1000){
+                    existingProduct.weight += parseFloat(1000);
+                    let opji=+existingProduct.price
+                    existingProduct.price = opji+600;
+                }else{
+                    existingProduct.weight += parseFloat(productWeight);
+                    let opji=+existingProduct.price
+                    existingProduct.price = opji+150;
+                }
                 // Save the updated cart back to localStorage
                 localStorage.setItem("cart", JSON.stringify(cart));
 

@@ -5,6 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="shortcut icon" href="./assets/Logo/Favicon.ico" type="image/x-icon">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php
 include('dbconnection.php');
@@ -35,7 +37,6 @@ if (isset($_GET['id'])) {
     }
 }
         ?>
-    <link rel="shortcut icon" href="./assets/Logo/Favicon.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
     <style>
         .carousel-btn {
@@ -111,7 +112,7 @@ if (isset($_GET['id'])) {
             </button>
         </div>
         <span class="text-gray-600">
-            <i class="fas fa-rupee-sign"></i> <?php echo $productPrice; ?>
+            <i class="fas fa-rupee-sign"></i> <p id="priceop"> <?php echo $productPrice; ?></p>
         </span>
         <div class="flex flex-col justify-between items-center mt-4 gap-y-5">
             
@@ -162,46 +163,62 @@ if (isset($_GET['id'])) {
         function increaseWeight() {
     var weightElement = document.querySelector('.wightop');
     var weight = parseInt(weightElement.textContent);
+    var priceop = document.getElementById('priceop');
+    var price = parseInt(priceop.textContent);
 
-    if (weight === 100) {
-        weight = 250;
-    } else if (weight === 250) {
+
+    if (weight === 250) {
         weight = 500;
+        price+=150
     } else if (weight === 500) {
         weight = 750;
+        price+=150
     }  else if (weight === 750) {
         weight = 1;
+        price+=150
     } else {
         weight++;
+        price+=600
     }
 
     weightElement.textContent = weight;
+    priceop.textContent = price;
+
 }
 
 function decreaseWeight() {
     var weightElement = document.querySelector('.wightop');
     var weight = parseInt(weightElement.textContent);
+    var priceop = document.getElementById('priceop');
+    var price = parseInt(priceop.textContent);
 
-    if (weight === 250) {
+    if (weight == 250) {
         alert("Minimum order should be 250 Grams")
         return;
 
-    }else if (weight === 500) {
+    }else if (weight == 500) {
         weight = 250;
+        price-=150
     }
-    else if (weight === 750) {
+    else if (weight == 750) {
         weight = 500;
-    } else if (weight === 1) {
+        price-=150
+    } else if (weight == 1) {
         weight = 750;
-    } else if (weight === 2) {
+        price-=150
+    } else if (weight == 2) {
         weight = 1;
-    } else if (weight === 3) {
+        price-=600
+    } else if (weight == 3) {
         weight = 2;
+        price-=600
     } else if (weight > 3) {
         weight--;
+        price-=600
     }
 
     weightElement.textContent = weight;
+    priceop.textContent = price;
 }
 
 
