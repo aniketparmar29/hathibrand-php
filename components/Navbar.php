@@ -177,7 +177,6 @@ function makeRequest() {
   }
 }
 
-
 function openDropdown(event, dropdownID) {
         let element = event.target;
         while (element.nodeName !== "BUTTON") {
