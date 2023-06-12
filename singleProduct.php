@@ -120,7 +120,7 @@ if (isset($_GET['id'])) {
                         onclick="addToWishlist(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')">
                        <span> Wishlist</span><i class="far fa-heart text-2xl hover:fa"></i>
                 </button>
-                <button class="text-white bg-yellow-500 rounded-lg p-4 hover:text-blue-600 transition-colors duration-300 flex flex-row justify-between w-40" title="Add to Cart">
+                <button  onclick="addToCart(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')" class="text-white bg-yellow-500 rounded-lg p-4 hover:text-blue-600 transition-colors duration-300 flex flex-row justify-between w-40" title="Add to Cart">
                     <span> Add To Cart</span><i class="fas fa-shopping-cart text-2xl "></i>
                 </button>
             </div>
@@ -174,10 +174,10 @@ if (isset($_GET['id'])) {
         weight = 750;
         price+=150
     }  else if (weight === 750) {
-        weight = 1;
+        weight = 1000;
         price+=150
     } else {
-        weight++;
+        weight+=1000;
         price+=600
     }
 
@@ -266,6 +266,61 @@ wishlist.push(productDetails);
                 alert("Your browser does not support localStorage");
             }
         }
+        function addToCart(productID, productName, productImage, productWeight, productPrice) {
+        // Check if localStorage is available
+        if (typeof (Storage) !== "undefined") {
+            // Retrieve existing cart items from localStorage
+            var cartItems = localStorage.getItem("cart");
+            var cart = [];
+
+            if (cartItems !== null) {
+                cart = JSON.parse(cartItems);
+            }
+
+            // Check if the product is already in the cart
+            var existingProduct = cart.find(function (item) {
+                return item.id === productID;
+            });
+
+            if (existingProduct) {
+                // Product already in the cart, increase the weight
+                if(existingProduct.weight>=1000){
+                    existingProduct.weight += parseFloat(1000);
+                    let opji=+existingProduct.price
+                    existingProduct.price = opji+600;
+                }else{
+                    existingProduct.weight += parseFloat(productWeight);
+                    let opji=+existingProduct.price
+                    existingProduct.price = opji+150;
+                }
+                // Save the updated cart back to localStorage
+                localStorage.setItem("cart", JSON.stringify(cart));
+
+                // Provide feedback to the user
+                alert("Product weight increased in the cart!");
+            } else {
+                // Add the product to the cart
+                var newProduct = {
+                    id: productID,
+                    name: productName,
+                    image: productImage,
+                    weight: parseFloat(productWeight),
+                    price: productPrice
+                };
+
+                cart.push(newProduct);
+
+                // Save the updated cart back to localStorage
+                localStorage.setItem("cart", JSON.stringify(cart));
+
+                // Provide feedback to the user
+                alert("Product added to the cart!");
+            }
+        } else {
+            // localStorage is not available
+            alert("Your browser does not support localStorage");
+        }
+    }
     </script>
 
     <?php
