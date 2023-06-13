@@ -25,8 +25,7 @@
         <ul class="desktop-menu text-red-500 hidden md:flex lg:flex md:text-lg flex-row gap-x-5 text-xl">
             <li class="hover:underline"><a href="index.php">Home</a></li>
             <li class="hover:underline"><a href="Products.php">Categories</a></li>
-            <li class="hover:underline"><a href="cart.php"><i class="fa fa-shopping-cart"></i></a></li>
-            <li class="hover:underline"><a href="wishlist.php"><i class="fa fa-heart"></i></a></li>
+            <li class="hover:underline"><button  type="button" data-drawer-target="drawer-right-example" data-drawer-show="drawer-right-example" data-drawer-placement="right" aria-controls="drawer-right-example"><i class="fa fa-shopping-cart"></i></button></li>
             <?php
               if (isset($_SESSION['auth'])) {
               ?>
@@ -65,7 +64,14 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") {
         </ul>
     </nav>
 
-    
+    <div id="drawer-right-example" class="fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800" tabindex="-1" aria-labelledby="drawer-right-label">
+    <h5 id="drawer-right-label" class="inline-flex items-center mb-4 text-base font-semibold text-gray-500 dark:text-gray-400"><i class="fa fa-shopping-cart mr-2"></i>Cart</h5>
+   <button type="button" data-drawer-hide="drawer-right-example" aria-controls="drawer-right-example" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute top-2.5 right-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" >
+      <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+      <span class="sr-only">Close menu</span>
+   </button>
+   
+</div> 
 <div id="search-results"> </div>
     <section class="fixed mobile-menu block lg:hidden md:hidden bottom-0 inset-x-0 z-50 shadow-lg bg-white dark:bg-dark  border-t-2 border-royal/20">
         <div id="tabs" class="flex justify-between">
@@ -82,12 +88,12 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") {
 >
                         <span class="tab block text-xs font-extrabold text-yellow-600">Categories</span>
                       </a>
-                      <a href="cart.php" class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1  hover:bg-gray-200">
+                      <button type="button" data-drawer-target="drawer-right-example" data-drawer-show="drawer-right-example" data-drawer-placement="right" aria-controls="drawer-right-example"  class="w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1  hover:bg-gray-200">
                         <div class="h-6 w-6 inline-block mb-1">
                             <i class="fa-solid text-red-500 fa-cart-shopping"></i>
                         </div>
-                        <span class="tab block text-xs font-extrabold text-yellow-600">Cart <span>0</span></span>
-                      </a>
+                        <span class="tab block text-xs font-extrabold text-yellow-600" >Cart <span>0</span></span>
+                      </button>
                       <?php
 if (isset($_SESSION['auth'])) {
 ?>
