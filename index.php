@@ -34,7 +34,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $productName = $row['product_name'];
     $productImage = explode(',', $row['product_images']);
     $productStock = $row['product_stock'];
-    $productWeight = $row['product_weight'];
     $productDesc = $row['product_desc'];
     $product_category = $row['product_category'];
     $productPrice = $row['product_price'];
@@ -49,7 +48,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         <?php } ?>
         <div class="mt-4">
             <h2 class="text-xl font-semibold"><?php echo $productName; ?></h2>
-            <p class="text-lg mt-2">Weight:<?php echo $productWeight; ?></p>
+            <p class="text-lg mt-2">Weight:250</p>
             <div class="flex justify-between items-center mt-4">
                 <span class="text-gray-600">
                     <i class="fas fa-rupee-sign"></i> <?php echo $productPrice; ?>
@@ -90,104 +89,7 @@ mysqli_close($conn);
 
 </html>
 <script>
-     function addToCart(productID, productName, productImage, productWeight, productPrice) {
-        // Check if localStorage is available
-        if (typeof (Storage) !== "undefined") {
-            // Retrieve existing cart items from localStorage
-            var cartItems = localStorage.getItem("cart");
-            var cart = [];
-
-            if (cartItems !== null) {
-                cart = JSON.parse(cartItems);
-            }
-
-            // Check if the product is already in the cart
-            var existingProduct = cart.find(function (item) {
-                return item.id === productID;
-            });
-
-            if (existingProduct) {
-                // Product already in the cart, increase the weight
-                if(existingProduct.weight>=1000){
-                    existingProduct.weight += parseFloat(1000);
-                    let opji=+existingProduct.price
-                    existingProduct.price = opji+600;
-                }else{
-                    existingProduct.weight += parseFloat(productWeight);
-                    let opji=+existingProduct.price
-                    existingProduct.price = opji+150;
-                }
-                // Save the updated cart back to localStorage
-                localStorage.setItem("cart", JSON.stringify(cart));
-
-                // Provide feedback to the user
-                alert("Product weight increased in the cart!");
-            } else {
-                // Add the product to the cart
-                var newProduct = {
-                    id: productID,
-                    name: productName,
-                    image: productImage,
-                    weight: parseFloat(productWeight),
-                    price: productPrice
-                };
-
-                cart.push(newProduct);
-
-                // Save the updated cart back to localStorage
-                localStorage.setItem("cart", JSON.stringify(cart));
-
-                // Provide feedback to the user
-                alert("Product added to the cart!");
-            }
-        } else {
-            // localStorage is not available
-            alert("Your browser does not support localStorage");
-        }
-    }
-
-    function addToWishlist(productID, productName, productImage, productWeight, productPrice) {
-  // Get the product details
-  var productDetails = {
-    id: productID,
-    name: productName,
-    image: productImage,
-    weight: productWeight,
-    price: productPrice
-  };
-
-  // Check if localStorage is available
-  if (typeof (Storage) !== "undefined") {
-    // Retrieve existing wishlist items from localStorage
-    var wishlistItems = localStorage.getItem("wishlist");
-    var wishlist = [];
-
-    if (wishlistItems !== null) {
-      wishlist = JSON.parse(wishlistItems);
-    }
-
-    // Check if the product is already in the wishlist
-    var isProductInWishlist = wishlist.some(function(item) {
-      return item.id === productID;
-    });
-
-    if (isProductInWishlist) {
-      // Product already in wishlist, display message to the user
-      alert("Product is already in the wishlist!");
-    } else {
-      // Add the product to the wishlist
-      wishlist.push(productDetails);
-
-      // Save the updated wishlist back to localStorage
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-      // Provide feedback to the user
-      alert("Product added to wishlist!");
-    }
-  } else {
-    // localStorage is not available
-    alert("Your browser does not support localStorage")
-  }
-}
+     
 
         // Display the session message as an alert
         $(document).ready(function() {

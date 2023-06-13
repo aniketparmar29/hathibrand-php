@@ -78,7 +78,6 @@ if (isset($_GET['id'])) {
         $productName = $row['product_name'];
         $productImage = explode(',', $row['product_images']);
         $productStock = $row['product_stock'];
-        $productWeight = $row['product_weight'];
         $product_category = $row['product_category'];
         $productPrice = $row['product_price'];
 
@@ -102,24 +101,15 @@ if (isset($_GET['id'])) {
     <div class="mt-4 flex flex-col  justify-around items-center">
         <h2 class="text-2xl font-bold mb-10"><?php echo $productName; ?></h2>
         <div class="flex items-center mt-2">
-            <p class="text-lg mr-2">Weight: </p>
-            <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300" onclick="decreaseWeight()">
-                <i class="fas fa-minus"></i>
-            </button>
-            <p class="text-lg wightop mx-2"><?php echo $productWeight; ?></p>
-            <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300" onclick="increaseWeight()">
-                <i class="fas fa-plus"></i>
-            </button>
+           
+           
         </div>
         <span class="text-gray-600">
             <i class="fas fa-rupee-sign"></i> <p id="priceop"> <?php echo $productPrice; ?></p>
         </span>
         <div class="flex flex-col justify-between items-center mt-4 gap-y-5">
             
-                <button class="text-white bg-yellow-500 rounded-lg p-4 hover:text-red-600 transition-colors duration-300 flex flex-row justify-between w-40" title="Add to Wishlist"
-                        onclick="addToWishlist(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')">
-                       <span> Wishlist</span><i class="far fa-heart text-2xl hover:fa"></i>
-                </button>
+               
                 <button  onclick="addToCart(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')" class="text-white bg-yellow-500 rounded-lg p-4 hover:text-blue-600 transition-colors duration-300 flex flex-row justify-between w-40" title="Add to Cart">
                     <span> Add To Cart</span><i class="fas fa-shopping-cart text-2xl "></i>
                 </button>
@@ -160,167 +150,6 @@ if (isset($_GET['id'])) {
 
         showImage(currentIndex);
 
-        function increaseWeight() {
-    var weightElement = document.querySelector('.wightop');
-    var weight = parseInt(weightElement.textContent);
-    var priceop = document.getElementById('priceop');
-    var price = parseInt(priceop.textContent);
-
-
-    if (weight === 250) {
-        weight = 500;
-        price+=150
-    } else if (weight === 500) {
-        weight = 750;
-        price+=150
-    }  else if (weight === 750) {
-        weight = 1000;
-        price+=150
-    } else {
-        weight+=1000;
-        price+=600
-    }
-
-    weightElement.textContent = weight;
-    priceop.textContent = price;
-
-}
-
-function decreaseWeight() {
-    var weightElement = document.querySelector('.wightop');
-    var weight = parseInt(weightElement.textContent);
-    var priceop = document.getElementById('priceop');
-    var price = parseInt(priceop.textContent);
-
-    if (weight == 250) {
-        alert("Minimum order should be 250 Grams")
-        return;
-
-    }else if (weight == 500) {
-        weight = 250;
-        price-=150
-    }
-    else if (weight == 750) {
-        weight = 500;
-        price-=150
-    } else if (weight == 1) {
-        weight = 750;
-        price-=150
-    } else if (weight == 2) {
-        weight = 1;
-        price-=600
-    } else if (weight == 3) {
-        weight = 2;
-        price-=600
-    } else if (weight > 3) {
-        weight--;
-        price-=600
-    }
-
-    weightElement.textContent = weight;
-    priceop.textContent = price;
-}
-
-
-        function addToWishlist(productID, productName, productImage, productWeight, productPrice) {
-            // Get the product details
-            var productDetails = {
-                id: productID,
-                name: productName,
-                image: productImage,
-                weight: productWeight,
-                price: productPrice
-            };
-
-            // Check if localStorage is available
-            if (typeof (Storage) !== "undefined") {
-                // Retrieve existing wishlist items from localStorage
-                var wishlistItems = localStorage.getItem("wishlist");
-                var wishlist = [];
-
-                if (wishlistItems !== null) {
-                    wishlist = JSON.parse(wishlistItems);
-                }
-
-                // Check if the product is already in the wishlist
-                var isProductInWishlist = wishlist.some(function (item) {
-                    return item.id === productID;
-                });
-
-                if (isProductInWishlist) {
-                    // Product already in wishlist, display message to the user
-                    alert("Product is already in the wishlist!");
-                } else {
-                    // Add the product to
-                    
-wishlist.push(productDetails);
-
-                    // Save the updated wishlist back to localStorage
-                    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-
-                    // Provide feedback to the user
-                    alert("Product added to wishlist!");
-                }
-            } else {
-                // localStorage is not available
-                alert("Your browser does not support localStorage");
-            }
-        }
-        function addToCart(productID, productName, productImage, productWeight, productPrice) {
-        // Check if localStorage is available
-        if (typeof (Storage) !== "undefined") {
-            // Retrieve existing cart items from localStorage
-            var cartItems = localStorage.getItem("cart");
-            var cart = [];
-
-            if (cartItems !== null) {
-                cart = JSON.parse(cartItems);
-            }
-
-            // Check if the product is already in the cart
-            var existingProduct = cart.find(function (item) {
-                return item.id === productID;
-            });
-
-            if (existingProduct) {
-                // Product already in the cart, increase the weight
-                if(existingProduct.weight>=1000){
-                    existingProduct.weight += parseFloat(1000);
-                    let opji=+existingProduct.price
-                    existingProduct.price = opji+600;
-                }else{
-                    existingProduct.weight += parseFloat(productWeight);
-                    let opji=+existingProduct.price
-                    existingProduct.price = opji+150;
-                }
-                // Save the updated cart back to localStorage
-                localStorage.setItem("cart", JSON.stringify(cart));
-
-                // Provide feedback to the user
-                alert("Product weight increased in the cart!");
-            } else {
-                // Add the product to the cart
-                var newProduct = {
-                    id: productID,
-                    name: productName,
-                    image: productImage,
-                    weight: parseFloat(productWeight),
-                    price: productPrice
-                };
-
-                cart.push(newProduct);
-
-                // Save the updated cart back to localStorage
-                localStorage.setItem("cart", JSON.stringify(cart));
-
-                // Provide feedback to the user
-                alert("Product added to the cart!");
-            }
-        } else {
-            // localStorage is not available
-            alert("Your browser does not support localStorage");
-        }
-    }
     </script>
 
     <?php
