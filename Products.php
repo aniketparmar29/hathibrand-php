@@ -71,7 +71,7 @@ $result = $conn->query($sql);
         $productName = $row['product_name'];
         $productImage = explode(',', $row['product_images']);
         $productStock = $row['product_stock'];
-        $productWeight = $row['product_weight'];
+        $productWeight = $row['display_weight'];
         $productDesc = $row['product_desc'];
         $product_category = $row['product_category'];
         $productPrice = $row['product_price'];
@@ -98,10 +98,12 @@ $result = $conn->query($sql);
                             <i class="far fa-heart text-2xl hover:fa"></i>
                         </button>
                     </div>
-                    <button class="text-blue-500 hover:text-blue-600 transition-colors duration-300" title="Add to Cart"
-                        onclick="addToCart(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productWeight; ?>', '<?php echo $productPrice; ?>')">
-                        <i class="fas fa-shopping-cart text-2xl"></i>
-                    </button>
+                    <button id="addToCartButton" class="text-blue-500 hover:text-blue-600 transition-colors duration-300" title="Add to Cart"
+    onclick="addToCart(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productPrice; ?>', '<?php echo $productWeight; ?>')">
+    <i class="fas fa-shopping-cart text-2xl"></i>
+</button>
+
+
 
                 </div>
             </div>
@@ -118,105 +120,161 @@ $result = $conn->query($sql);
 </body>
 </html>
 <script>
-    function addToCart(productID, productName, productImage, productWeight, productPrice) {
-        // Check if localStorage is available
-        if (typeof (Storage) !== "undefined") {
-            // Retrieve existing cart items from localStorage
-            var cartItems = localStorage.getItem("cart");
-            var cart = [];
+     function displayCartItems() {
+            const cartData = JSON.parse(localStorage.getItem('cartItems')) || [];
+            const cartContainer = document.getElementById('sidedrover');
+            const totalContainer = document.createElement('div');
 
-            if (cartItems !== null) {
-                cart = JSON.parse(cartItems);
-            }
+            // Clear previous cart items
+            cartContainer.innerHTML = '';
 
-            // Check if the product is already in the cart
-            var existingProduct = cart.find(function (item) {
-                return item.id === productID;
-            });
-
-            if (existingProduct) {
-                // Product already in the cart, increase the weight
-                if(existingProduct.weight>=1000){
-                    existingProduct.weight += parseFloat(1000);
-                    let opji=+existingProduct.price
-                    existingProduct.price = opji+600;
-                }else{
-                    existingProduct.weight += parseFloat(productWeight);
-                    let opji=+existingProduct.price
-                    existingProduct.price = opji+150;
-                }
-                // Save the updated cart back to localStorage
-                localStorage.setItem("cart", JSON.stringify(cart));
-
-                // Provide feedback to the user
-                alert("Product weight increased in the cart!");
+            if (cartData.length === 0) {
+                // If cart is empty, show a message
+                cartContainer.innerHTML = '<p class="text-center mt-4 text-gray-500">Cart is empty.</p>';
             } else {
-                // Add the product to the cart
-                var newProduct = {
-                    id: productID,
-                    name: productName,
-                    image: productImage,
-                    weight: parseFloat(productWeight),
-                    price: productPrice
-                };
+                let totalAmount = 0;
+                // Loop through each item in the cart and create HTML elements
+                cartData.forEach(item => {
+                    const cartItemDiv = document.createElement('div');
+                    cartItemDiv.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'border-b', 'border-gray-200');
 
-                cart.push(newProduct);
+                    const cartItemName = document.createElement('p');
+                    cartItemName.textContent = item.productName;
 
-                // Save the updated cart back to localStorage
-                localStorage.setItem("cart", JSON.stringify(cart));
+                    const cartItemQuantity = document.createElement('p');
+                    cartItemQuantity.textContent = `x${item.quantity}`;
 
-                // Provide feedback to the user
-                alert("Product added to the cart!");
+                    const cartItemWeight = document.createElement('p');
+                    cartItemWeight.textContent = `${item.productWeight}`;
+
+                    const cartItemPrice = document.createElement('p');
+                    const itemPrice = item.productPrice * item.quantity;
+                    cartItemPrice.textContent = `₹${itemPrice}`;
+
+                    cartItemDiv.appendChild(cartItemName);
+                    cartItemDiv.appendChild(cartItemQuantity);
+                    cartItemDiv.appendChild(cartItemWeight);
+                    cartItemDiv.appendChild(cartItemPrice);
+
+                    cartContainer.appendChild(cartItemDiv);
+
+                    totalAmount += itemPrice;
+                });
+
+                // Display the total amount
+                totalContainer.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'border-b', 'border-gray-200');
+                totalContainer.innerHTML = `
+                    <p class="font-semibold flex-grow">Total:</p>
+                    <p class="font-semibold">₹${totalAmount}</p>
+                `;
+                cartContainer.appendChild(totalContainer);
             }
-        } else {
-            // localStorage is not available
-            alert("Your browser does not support localStorage");
         }
+        function displayCartItemsCount() {
+        const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+        // Update the count in the navbar
+        const cartCountElement = document.getElementById('cartItemCount');
+        cartCountElement.textContent = cartItemCount;
     }
 
-    function addToWishlist(productID, productName, productImage, productWeight, productPrice) {
-        // Get the product details
-        var productDetails = {
-            id: productID,
-            name: productName,
-            image: productImage,
-            weight: productWeight,
-            price: productPrice
-        };
+function addToCart(productId, productName, productImage, productPrice,wight) {
+  const addToCartButton = document.getElementById('addToCartButton');
+  addToCartButton.disabled = true; // Disable the button to prevent multiple clicks
 
-        // Check if localStorage is available
-        if (typeof (Storage) !== "undefined") {
-            // Retrieve existing wishlist items from localStorage
-            var wishlistItems = localStorage.getItem("wishlist");
-            var wishlist = [];
+  // Create the data object to be sent in the request
+  const requestData = {
+    productId: productId,
+    productName: productName,
+    productImage: productImage,
+    productPrice: productPrice,
+    productWeight: wight,
+  };
 
-            if (wishlistItems !== null) {
-                wishlist = JSON.parse(wishlistItems);
-            }
+  // Send the product data to the addToCart.php file using AJAX
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "addToCart.php", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
 
-            // Check if the product is already in the wishlist
-            var isProductInWishlist = wishlist.some(function (item) {
-                return item.id === productID;
-            });
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        // AJAX request was successful
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Update the cart display
+          saveCartItemToLocalStorage(requestData);
+          displayCartItems();
+          displayCartItemsCount();
 
-            if (isProductInWishlist) {
-                // Product already in wishlist, display message to the user
-                alert("Product is already in the wishlist!");
-            } else {
-                // Add the product to the wishlist
-                wishlist.push(productDetails);
+          alert("Item added to cart successfully!");
 
-                // Save the updated wishlist back to localStorage
-                localStorage.setItem("wishlist", JSON.stringify(wishlist));
-
-                // Provide feedback to the user
-                alert("Product added to wishlist!");
-            }
+          // Open the side drawer after adding the item to the cart
+          const drawer = document.getElementById("drawer-right-example");
+          drawer.classList.remove("translate-x-full");
+          drawer.classList.add("translate-x-0");
         } else {
-            // localStorage is not available
-            alert("Your browser does not support localStorage")
+          alert("Failed to add item to cart. Please try again.");
         }
+      } else {
+        alert("An error occurred while processing the request.");
+      }
+      
+      addToCartButton.disabled = false; // Enable the button again, regardless of the response
     }
+  };
+
+  // Convert the requestData object to JSON and send it in the request body
+  xhr.send(JSON.stringify(requestData));
+}
+
+
+function saveCartItemToLocalStorage(itemData) {
+  // Retrieve existing cart items from localStorage
+  const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+  // Check if the product already exists in the cart
+  const existingItemIndex = cartItems.findIndex(
+    (item) =>
+      item.productId === itemData.productId &&
+      item.productWeight === itemData.productWeight
+  );
+
+  if (existingItemIndex !== -1) {
+    // Product already exists in the cart, update the quantity
+    cartItems[existingItemIndex].quantity++;
+  } else {
+    // Product doesn't exist in the cart, add it as a new item
+    itemData.quantity = 1;
+    cartItems.push(itemData);
+  }
+
+  // Save the updated cart data to the localStorage
+  localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
+  // Update the cart items data in the session
+  updateCartItemsInSession(cartItems);
+}
+
+function updateCartItemsInSession(cartItems) {
+  // Make an AJAX request to update the cart items data in the session
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "updateCartItemsInSession.php", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+      console.log("Cart items data updated in session successfully!");
+    }
+  };
+
+  // Convert the cart items data to JSON and send it in the request body
+  xhr.send(JSON.stringify(cartItems));
+}
+
+// Call the displayCartItems function to check if the cart data is in localStorage
+displayCartItems();
 
 </script>
 
