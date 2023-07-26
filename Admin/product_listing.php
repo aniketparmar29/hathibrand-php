@@ -128,7 +128,7 @@ if (isset($_GET['delete_product'])) {
                 $productName = $row['product_name'];
                 $productImage = explode(',', $row['product_images']);
                 $productStock = $row['product_stock'];
-                $productWeight = $row['product_weight'];
+                $productWeight = $row['display_weight'];
                 $productDesc = $row['product_desc'];
                 $productCategory = $row['product_category'];
                 $productPrice = $row['product_price'];

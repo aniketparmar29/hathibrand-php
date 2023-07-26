@@ -138,56 +138,97 @@ if (isset($_GET['id'])) {
 
         <script>
         
+        // Function to display the cart items and calculate total amount in the side drawer
         function displayCartItems() {
-            const cartData = JSON.parse(localStorage.getItem('cartItems')) || [];
-            const cartContainer = document.getElementById('sidedrover');
-            const totalContainer = document.createElement('div');
+  const cartData = JSON.parse(localStorage.getItem('cartItems')) || [];
+  const cartContainer = document.getElementById('sidedrover');
+  const totalContainer = document.createElement('div');
 
-            // Clear previous cart items
-            cartContainer.innerHTML = '';
+  // Clear previous cart items
+  cartContainer.innerHTML = '';
 
-            if (cartData.length === 0) {
-                // If cart is empty, show a message
-                cartContainer.innerHTML = '<p class="text-center mt-4 text-gray-500">Cart is empty.</p>';
-            } else {
-                let totalAmount = 0;
-                // Loop through each item in the cart and create HTML elements
-                cartData.forEach(item => {
-                    const cartItemDiv = document.createElement('div');
-                    cartItemDiv.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'border-b', 'border-gray-200');
+  if (cartData.length === 0) {
+    // If cart is empty, show a message
+    cartContainer.innerHTML = '<p class="text-center mt-4 text-gray-500">Cart is empty.</p>';
+  } else {
+    let totalAmount = 0;
+    // Loop through each item in the cart and create HTML elements
+    cartData.forEach(item => {
+      const cartItemDiv = document.createElement('div');
+      cartItemDiv.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'border-b', 'border-gray-200');
 
-                    const cartItemName = document.createElement('p');
-                    cartItemName.textContent = item.productName;
+      // Create an image element for the product image
+      const cartItemImage = document.createElement('img');
+      cartItemImage.src = "./Admin/" + item.productImage;
+      cartItemImage.alt = item.productName;
+      cartItemImage.classList.add('w-16', 'h-16', 'object-cover', 'rounded');
 
-                    const cartItemQuantity = document.createElement('p');
-                    cartItemQuantity.textContent = `x${item.quantity}`;
+      const cartItemDetails = document.createElement('div');
+      cartItemDetails.classList.add('ml-4', 'flex-grow');
 
-                    const cartItemWeight = document.createElement('p');
-                    cartItemWeight.textContent = `${item.productWeight}`;
+      // Create elements for product name, weight, and quantity
+      const cartItemName = document.createElement('p');
+      cartItemName.textContent = item.productName;
+      const cartItemWeight = document.createElement('p');
+      cartItemWeight.textContent = `${item.productWeight}`;
+      const cartItemQuantity = document.createElement('p');
+      cartItemQuantity.textContent = `x${item.quantity}`;
+      const cartItemPrice = document.createElement('p');
+      const itemPrice = item.productPrice * item.quantity;
+      cartItemPrice.textContent = `₹${itemPrice}`;
+      
+      cartItemDetails.appendChild(cartItemName);
+      cartItemDetails.appendChild(cartItemWeight);
+      cartItemDetails.appendChild(cartItemQuantity);
+      cartItemDetails.appendChild(cartItemPrice);
 
-                    const cartItemPrice = document.createElement('p');
-                    const itemPrice = item.productPrice * item.quantity;
-                    cartItemPrice.textContent = `₹${itemPrice}`;
 
-                    cartItemDiv.appendChild(cartItemName);
-                    cartItemDiv.appendChild(cartItemQuantity);
-                    cartItemDiv.appendChild(cartItemWeight);
-                    cartItemDiv.appendChild(cartItemPrice);
+      cartItemDiv.appendChild(cartItemImage);
+      cartItemDiv.appendChild(cartItemDetails);
 
-                    cartContainer.appendChild(cartItemDiv);
+      // Create a "Remove" button for the cart item
+      const removeButton = document.createElement('button');
+      removeButton.textContent = 'X';
+      removeButton.classList.add('text-red-500', 'font-semibold', 'hover:text-red-700', 'cursor-pointer');
+      removeButton.addEventListener('click', () => {
+        removeCartItem(item.productId, item.productWeight);
+      });
 
-                    totalAmount += itemPrice;
-                });
+      cartItemDiv.appendChild(removeButton);
+      cartContainer.appendChild(cartItemDiv);
 
-                // Display the total amount
-                totalContainer.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'border-b', 'border-gray-200');
-                totalContainer.innerHTML = `
-                    <p class="font-semibold flex-grow">Total:</p>
-                    <p class="font-semibold">₹${totalAmount}</p>
-                `;
-                cartContainer.appendChild(totalContainer);
-            }
-        }
+      totalAmount += itemPrice;
+    });
+
+    // Display the total amount
+    totalContainer.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'border-b', 'border-gray-200');
+    totalContainer.innerHTML = `
+      <p class="font-semibold flex-grow">Total:</p>
+      <p class="font-semibold">₹${totalAmount}</p>
+    `;
+    cartContainer.appendChild(totalContainer);
+  }
+}
+
+function removeCartItem(productId, productWeight) {
+  const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+  // Find the index of the cart item to be removed
+  const itemIndex = cartItems.findIndex(item => item.productId === productId && item.productWeight === productWeight);
+
+  if (itemIndex !== -1) {
+    // Remove the item from the cart
+    cartItems.splice(itemIndex, 1);
+
+    // Save the updated cart data to localStorage
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+    // Update the cart display
+    displayCartItemsCount(); // Update the cart count in the navbar
+    displayCartItems(); // Update the cart items in the side drawer
+  }
+}
+
         function displayCartItemsCount() {
         const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
         const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
