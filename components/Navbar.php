@@ -79,7 +79,7 @@
             onclick="checkout()">Checkout</button>
     </div>
 
-    <div id="search-results"> </div>
+    <div id="search-results"></div>
 
     <section class="fixed mobile-menu block lg:hidden md:hidden bottom-0 inset-x-0 z-50 shadow-lg bg-white dark:bg-dark border-t-2 border-royal/20">
     <div id="tabs" class="flex justify-between items-center">
@@ -154,44 +154,10 @@
                   
                   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                   <script>
-var timer = null;
-var searchInput = document.getElementById('search');
-var searchResults = document.getElementById('search-results');
 
-searchInput.addEventListener('keyup', function() {
-  clearTimeout(timer);
-  timer = setTimeout(makeRequest, 300);
-});
 
-searchInput.addEventListener('input', function() {
-  clearTimeout(timer);
-  timer = setTimeout(makeRequest, 300);
-});
 
-function makeRequest() {
-  var query = searchInput.value.trim();
-  if (query !== '') {
-    var request = new XMLHttpRequest();
-    request.open('POST', './search.php', true);
-    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    request.onreadystatechange = function() {
-      if (request.readyState === 4 && request.status === 200) {
-        var results = JSON.parse(request.responseText);
-        var output = '';
-        for (var i = 0; i < results.length; i++) {
-          output += '<div>';
-          output += '<h3>' + results[i].name + '</h3>';
-          output += '<p>' + results[i].description + '</p>';
-          output += '</div>';
-        }
-        searchResults.innerHTML = output;
-      }
-    };
-    request.send('query=' + encodeURIComponent(query.toLowerCase()));
-  } else {
-    searchResults.innerHTML = '';
-  }
-}
+
 
 function openDropdown(event, dropdownID) {
         let element = event.target;
