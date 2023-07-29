@@ -74,9 +74,15 @@
         <div id="sidedrover">
             <!-- Cart items will be added dynamically here -->
         </div>
+        <?php if (isset($_SESSION['auth'])) { ?>
         <button type="button"
             class="w-full bg-blue-500 text-white py-2 mt-4 rounded-md font-semibold hover:bg-blue-600"
             onclick="checkout()">Checkout</button>
+            <?php } else { ?>
+                <a href="./login.php" type="button"
+            class="w-full bg-blue-500 text-white py-2 mt-4 rounded-md font-semibold hover:bg-blue-600 text-center"
+            onclick="ltcf()"> Checkout</a>
+            <?php } ?>
     </div>
 
     <div id="search-results"></div>
@@ -154,9 +160,13 @@
                   
                   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                   <script>
+function ltcf(){
+    alert("please login first")
+}
 
-
-
+function checkout(){
+    console.log("op")
+}
 
 
 function openDropdown(event, dropdownID) {

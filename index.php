@@ -51,8 +51,8 @@ if (!$result) {
                 <h2 class="text-xl font-semibold"><?php echo $productName; ?></h2>
                 <p class="text-lg mt-2">Weight:<?php echo $productWeight; ?></p>
                 <div class="flex justify-between items-center mt-4">
-                    <span class="text-gray-600">
-                        <i class="fas fa-rupee-sign"></i> <?php echo $productPrice; ?>
+                    <span class="text-gray-600 text-lg font-bold">
+                    ₹<?php echo $productPrice; ?>
                     </span>
                    
                     <button id="addToCartButton" class="text-blue-500 hover:text-blue-600 transition-colors duration-300" title="Add to Cart"
