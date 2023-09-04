@@ -110,6 +110,7 @@ $result = $conn->query($sql);
     </div>
 </div>
 <?php include './components/Footer.php'?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
 </html>
@@ -241,17 +242,28 @@ function addToCart(productId, productName, productImage, productPrice,wight) {
           displayCartItems();
           displayCartItemsCount();
 
-          alert("Item added to cart successfully!");
-
+          Swal.fire(
+          'Cart Status',
+          'Item added to cart successfully!',
+          'success'
+        )
           // Open the side drawer after adding the item to the cart
           const drawer = document.getElementById("drawer-right-example");
           drawer.classList.remove("translate-x-full");
           drawer.classList.add("translate-x-0");
         } else {
-          alert("Failed to add item to cart. Please try again.");
+          Swal.fire(
+          'Cart Status',
+          'Failed to add item to cart. Please try again.',
+          'error'
+        )
         }
       } else {
-        alert("An error occurred while processing the request.");
+        Swal.fire(
+          'Cart Status',
+          'An error occurred while processing the request.',
+          'error'
+        )
       }
       
       addToCartButton.disabled = false; // Enable the button again, regardless of the response

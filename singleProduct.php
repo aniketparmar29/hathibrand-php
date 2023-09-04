@@ -62,6 +62,7 @@
 </head>
 <body>
 <?php include './components/Navbar.php'?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php
 // Assuming the product ID is passed as a URL parameter named 'id'
@@ -123,11 +124,11 @@ if (isset($_GET['id'])) {
                     <div class="flex flex-col justify-between items-center mt-4 gap-y-5">
 
                     <button onclick="addToCart(<?php echo $productID; ?>, '<?php echo $productName; ?>', '<?php echo $productImage[0]; ?>', '<?php echo $productPrice; ?>')" 
-  class="text-white bg-yellow-500 rounded-lg p-4 hover:text-blue-600 transition-colors duration-300 flex flex-row justify-between w-40" 
-  title="Add to Cart" id="addToCartButton">
-  <span> Add To Cart</span>
-  <i class="fas fa-shopping-cart text-2xl"></i>
-</button>
+                    class="text-white bg-yellow-500 rounded-lg p-4 hover:text-blue-600 transition-colors duration-300 flex flex-row justify-between w-40" 
+                    title="Add to Cart" id="addToCartButton">
+                    <span> Add To Cart</span>
+                    <i class="fas fa-shopping-cart text-2xl"></i>
+                  </button>
 
 
 
@@ -275,17 +276,29 @@ function addToCart(productId, productName, productImage, productPrice) {
           displayCartItems();
           displayCartItemsCount();
 
-          alert("Item added to cart successfully!");
+          Swal.fire(
+          'Cart Status',
+          'Item added to cart successfully!',
+          'success'
+          )
 
           // Open the side drawer after adding the item to the cart
           const drawer = document.getElementById("drawer-right-example");
           drawer.classList.remove("translate-x-full");
           drawer.classList.add("translate-x-0");
         } else {
-          alert("Failed to add item to cart. Please try again.");
+          Swal.fire(
+          'Cart Status',
+          'Failed to add item to cart. Please try again.',
+          'error'
+        )
         }
       } else {
-        alert("An error occurred while processing the request.");
+        Swal.fire(
+          'Cart Status',
+          'An error occurred while processing the request.',
+          'error'
+        )
       }
       
       addToCartButton.disabled = false; // Enable the button again, regardless of the response

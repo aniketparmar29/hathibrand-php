@@ -1,3 +1,35 @@
+<?php
+require_once './dbconnection.php'; // Include your database connection script
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
+    $address = $_POST['address'];
+    $product = $_POST['product'];
+    $date = date('Y-m-d H:i:s'); // Current date and time
+    $payment_status = 'Pending'; // You can set the initial payment status as needed
+    $total_amount = $_POST['total_amount'];
+    $user_id = $_SESSION['user_id']; // Assuming you have a user authentication system
+
+    // Prepare and execute the SQL query to insert the order
+    $sql = "INSERT INTO `orders`(`Address`, `Product`, `date`, `payment_status`, `total_amount`, `user_id`) 
+            VALUES (?, ?, ?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$address, $product, $date, $payment_status, $total_amount, $user_id]);
+
+    // Check if the order was successfully inserted
+    if ($stmt->rowCount() > 0) {
+        // Order placed successfully
+        // You can perform additional actions here, such as clearing the shopping cart
+        echo "Order placed successfully!";
+    } else {
+        // Failed to place the order
+        echo "Error placing the order.";
+    }
+}
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,15 +38,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:200,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"/>
 </head>
 <body>
   <?php require './components/Navbar.php' ?>
 
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-bold mt-8 mb-4">Checkout</h1>
+  <div class="container ">
+    <h1 class="text-3xl font-bold mt-8 mb-4 text-center">Checkout</h1>
     <div class="flex flex-col lg:flex-row">
-      <div class="w-full lg:w-2/3 mr-4">
+      <div class="container lg:w-2/3 mx-auto">
         <!-- Cart Items -->
         <div id="cartItemsContainer"></div>
         <!-- Total Amount -->
@@ -22,9 +57,9 @@
           <p class="font-semibold">Total:</p>
           <p class="font-semibold" id="totalAmount"></p>
         </div>
-        <button id="placeOrderButton" class="mt-4 bg-blue-500 text-white font-semibold p-2 w-32 rounded">Place Order</button>
+        <button id="placeOrderButton" class="mt-4 bg-blue-500 text-white font-semibold p-2 w-32 rounded" type="submit" name="placeOrder">Place Order</button>
       </div>
-      <div class="w-full lg:w-1/3 mt-4 lg:mt-0">
+      <div class="w-full lg:w-1/2 mt-4 lg:mt-0">
         <!-- Address Form -->
         <div class="bg-white p-4 shadow">
           <h2 class="text-lg font-bold mb-4">Shipping Address</h2>
@@ -75,25 +110,100 @@
   </div>
   <!-- Footer -->
   <?php require './components/Footer.php' ?>
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       function handlePlaceOrder() {
-        // Check if address is available in localStorage
-        const addressData = JSON.parse(localStorage.getItem('shippingAddress'));
+    const addressData = JSON.parse(localStorage.getItem('shippingAddress'));
 
-        if (!addressData || Object.keys(addressData).length === 0) {
-          // If address is not available, show an alert and do not place the order
-          alert('Please provide a shipping address before placing the order.');
-          return;
+    if (!addressData || Object.keys(addressData).length === 0) {
+        // If address is not available, show an alert and do not proceed
+        Swal.fire(
+            'Order Status',
+            'Please provide a shipping address before placing the order.',
+            'error'
+        );
+    } else {
+        // Retrieve cart items from localStorage
+        const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+        if (cartItems.length === 0) {
+            // If the cart is empty, show an alert
+            Swal.fire(
+                'Order Status',
+                'Your cart is empty. Please add items to your cart before placing an order.',
+                'error'
+            );
+            return;
         }
 
-        // Here, you can proceed with the order placement logic
-        // For example, you can show a success message or redirect to a confirmation page.
-        // Replace the following line with the actual order placement logic.
+        // Calculate the total amount from the cart items
+        const totalAmount = cartItems.reduce((total, item) => {
+            const itemPrice = item.productPrice * item.quantity;
+            return total + itemPrice;
+        }, 0);
 
-        alert('Order placed successfully!');
-      }
+        // Send the order data to the API using AJAX
+        const orderData = {
+            address: addressData,
+            product: cartItems, // Include the cart items as product data
+            total_amount: totalAmount, // Include the total amount
+        };
+
+        // Send the order data to the API using AJAX
+        fetch('Place_order_api.php', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderData),
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return response.json();
+})
+.then(data => {
+    // Handle the JSON response here
+    console.log(data)
+    if (data.status === 'success') {
+        // Order placed successfully
+        Swal.fire(
+            'Order Status',
+            'Order placed successfully!',
+            'success'
+        );
+
+        // Clear the cart items in localStorage
+        localStorage.removeItem('cartItems');
+
+        // Update the cart display
+        displayCartItemsCount();
+        displayCartItems();
+    } else {
+        // Error placing the order
+        Swal.fire(
+            'Order Status',
+            'Error placing the order.',
+            'error'
+        );
+    }
+})
+.catch(error => {
+    // Handle fetch errors here, including invalid JSON responses
+    console.error('Fetch error:', error);
+    Swal.fire(
+        'Order Status',
+        'Error placing the order. Please try again later.',
+        'error'
+    );
+});
+
+    }
+}
+
+
 
       const placeOrderButton = document.getElementById('placeOrderButton');
       placeOrderButton.addEventListener('click', handlePlaceOrder);
@@ -153,7 +263,7 @@
       // Create a "Remove" button for the cart item
       const removeButton = document.createElement('button');
       removeButton.textContent = 'X';
-      removeButton.classList.add('text-red-500', 'font-semibold', 'hover:text-red-700', 'cursor-pointer');
+      removeButton.classList.add('text-red-500', 'font-semibold', 'hover:text-red-700', 'cursor-pointer','border-2','rounded-md','p-3','px-4','shadow-md','shadow-red','hover:bg-gray-100');
       removeButton.addEventListener('click', () => {
         removeCartItem(item.productId, item.productWeight);
       });

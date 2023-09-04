@@ -84,6 +84,8 @@ mysqli_close($conn);
 </body>
 
 </html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
      
      function displayCartItems() {
@@ -213,17 +215,29 @@ function addToCart(productId, productName, productImage, productPrice,wight) {
           displayCartItems();
           displayCartItemsCount();
 
-          alert("Item added to cart successfully!");
+          Swal.fire(
+          'Cart Status',
+          'Item added to cart successfully!',
+          'success'
+        )
 
           // Open the side drawer after adding the item to the cart
           const drawer = document.getElementById("drawer-right-example");
           drawer.classList.remove("translate-x-full");
           drawer.classList.add("translate-x-0");
         } else {
-          alert("Failed to add item to cart. Please try again.");
+          Swal.fire(
+          'Cart Status',
+          'Failed to add item to cart. Please try again.',
+          'error'
+        )
         }
       } else {
-        alert("An error occurred while processing the request.");
+        Swal.fire(
+          'Cart Status',
+          'An error occurred while processing the request.',
+          'error'
+        )
       }
       
       addToCartButton.disabled = false; // Enable the button again, regardless of the response
@@ -290,7 +304,11 @@ displayCartItems();
                 success: function(data) {
                     if (data !== '') {
                         // Display the session message as an alert
-                        alert(data);
+                        Swal.fire(
+                          'Login Status',
+                          data,
+                          'success'
+                        )
                     }
                 }
             });
