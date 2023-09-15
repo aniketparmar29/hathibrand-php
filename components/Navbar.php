@@ -1,4 +1,12 @@
+<?php
+$loggedIn = false;
+$username = '';
 
+if (isset($_COOKIE['auth']) && $_COOKIE['auth'] === '1' && isset($_COOKIE['user_id']) && isset($_COOKIE['username']) && isset($_COOKIE['role'])) {
+    $loggedIn = true;
+    $username = $_COOKIE['username'];
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -30,10 +38,10 @@
             <li class="hover:underline"><a href="Products.php">Categories</a></li>
             <li class="hover:underline"><button type="button" data-drawer-target="drawer-right-example" data-drawer-show="drawer-right-example"
                     data-drawer-placement="right" aria-controls="drawer-right-example"><i class="fa fa-shopping-cart"></i></button></li>
-            <?php if (isset($_SESSION['auth'])) { ?>
+                    <?php if ($loggedIn) { ?>
                 <button id="dropdownHoverButton" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="hover"
                     class="flex flex-row gap-x-1 items-center" type="button">
-                    <p class="nav-item"> <?= $_SESSION['username']; ?></p>
+                    <p class="nav-item"><?= $username; ?></p>
                     <i class="fa-solid fa-caret-down ps-1"></i>
                 </button>
                 <!-- Dropdown menu -->
@@ -42,7 +50,7 @@
                         <li>
                             <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
                         </li>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") { ?>
+                        <?php if (isset($_COOKIE['role']) && $_COOKIE['role'] === "admin") { ?>
                             <li>
                                 <a href="./Admin/admin.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Admin</a>
                             </li>
@@ -75,7 +83,7 @@
         <div id="sidedrover">
             <!-- Cart items will be added dynamically here -->
         </div>
-        <?php if (isset($_SESSION['auth'])) { ?>
+        <?php if (isset($_COOKIE['auth'])) { ?>
         <a type="button"
             class="w-full bg-blue-500 text-white py-2 mt-4 rounded-md font-semibold hover:bg-blue-600 text-center"
             href="./checkout.php" >Checkout</a>
@@ -108,28 +116,29 @@
                         <div class="h-6 w-6 inline-block mb-1">
                             <i class="fa-solid text-red-500 fa-cart-shopping"></i>
                         </div>
-                <?php
-            // Get the cart items from localStorage
-            $cartItems = isset($_SESSION['cartItems']) ? json_decode($_SESSION['cartItems'], true) : [];
+                        <php
+$cartItems = isset($_COOKIE['cartItems']) ? json_decode($_COOKIE['cartItems'], true) : [];
 
-            // Calculate the total quantity of items in the cart
-            $totalQuantity = array_reduce($cartItems, function ($total, $item) {
-                return $total + $item['quantity'];
-            }, 0);
-            ?>
-            <span class="tab block text-xs font-extrabold text-yellow-600" >Cart <span id="cartItemCount" class="bg-red-600 rounded-full text-white px-2 py-1 text-xs"><?= $totalQuantity ?></span></span>
+// Calculate the total quantity of items in the cart
+$totalQuantity = array_reduce($cartItems, function ($total, $item) {
+    return $total + $item['quantity'];
+}, 0);
+
+// Update the cart display
+echo '<span id="cartItemCount" class="bg-red-600 rounded-full text-white px-2 py-1 text-xs">' . $totalQuantity . '</span>';
+
             </button>
            
         
 
-            <?php if (isset($_SESSION['auth'])) { ?>
+            <?php if (isset($_COOKIE['auth'])) { ?>
                 <button  class=" gap-x-1 items-center w-full focus:text-royal hover:text-royal justify-center inline-block text-center pt-2 pb-1 hover:bg-gray-200" type="button"
                     onclick="openDropdown(event,'dropdown-id')">
                     <div class="h-6 w-6 inline-block mb-1">
                         <i class="fa-solid text-red-500 fa-user"></i>
                     </div>
                     <div>
-                        <p class="nav-item tab block text-xs font-extrabold text-yellow-600"><?= $_SESSION['username']; ?></p>
+                        <p class="nav-item tab block text-xs font-extrabold text-yellow-600"><?= $_COOKIE['username']; ?></p>
                     </div>
                 </button>
                 <!-- Dropdown menu -->
@@ -138,7 +147,7 @@
                         <li>
                             <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
                         </li>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === "admin") { ?>
+                        <?php if (isset($_COOKIE['role']) && $_COOKIE['role'] === "admin") { ?>
                             <li>
                                 <a href="./Admin/admin.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Admin</a>
                             </li>

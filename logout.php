@@ -1,13 +1,10 @@
 <?php
 session_start();
-
-if(isset($_SESSION['auth']))
-{
-    unset($_SESSION['auth']);
-    unset($_SESSION['username']);
-    unset($_SESSION['user_id']);
-    unset($_SESSION['role']);
-    $_SESSION['msg']="Logged out Successfully";
-}
+// Clear the authentication cookies
+setcookie('auth', '', time() - 3600, '/');
+setcookie('user_id', '', time() - 3600, '/');
+setcookie('username', '', time() - 3600, '/');
+setcookie('role', '', time() - 3600, '/');
+$_SESSION['msg']="Logout Successful";
 header('Location:./index.php');
 ?>

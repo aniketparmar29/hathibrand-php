@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
     $date = date('Y-m-d H:i:s'); // Current date and time
     $payment_status = 'Pending'; // You can set the initial payment status as needed
     $total_amount = $_POST['total_amount'];
-    $user_id = $_SESSION['user_id']; // Assuming you have a user authentication system
+    $user_id = $_COOKIE['user_id']; // Assuming you have a user authentication system
 
     // Prepare and execute the SQL query to insert the order
     $sql = "INSERT INTO `orders`(`Address`, `Product`, `date`, `payment_status`, `total_amount`, `user_id`) 

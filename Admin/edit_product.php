@@ -1,11 +1,11 @@
 <?php
-include('../dbconnection.php');
+    include "../dbconnection.php";
+    if (!isset($_COOKIE['auth']) || $_COOKIE['role'] !== "admin") {
+      echo "op";
+      header('Location: ../index.php');
+      exit(); // It's recommended to include an exit() statement after a header redirect
+  }
 
-if (!isset($_SESSION['auth']) || $_SESSION['role'] !== "admin") {
-    echo "op";
-    header('Location: ../index.php');
-    exit(); // It's recommended to include an exit() statement after a header redirect
-}
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

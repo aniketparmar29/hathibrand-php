@@ -1,7 +1,6 @@
 <?php
 include('./dbconnection.php');
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mobile = $_POST['mobile'];
     $password = $_POST['password'];
@@ -16,11 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Verify the password
         if (password_verify($password, $storedPassword)) {
-            // Password is correct, store user data in session
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['role'] = $row['role'];
-            $_SESSION['auth']=true;
+            // Password is correct, set an authentication cookie to remember the user for 7 days
+            setcookie('auth', '1', time() + 7 * 24 * 60 * 60, '/');
+            setcookie('user_id', $row['id'], time() + 7 * 24 * 60 * 60, '/');
+            setcookie('username', $row['username'], time() + 7 * 24 * 60 * 60, '/');
+            setcookie('role', $row['role'], time() + 7 * 24 * 60 * 60, '/');
             $_SESSION['msg']="Login Successful";
 
             // Redirect to the index page
@@ -32,6 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error = "Invalid mobile or password";
     }
+}
+
+// Check if the user is already logged in using the authentication cookie
+if (isset($_COOKIE['auth']) && $_COOKIE['auth'] === '1' && isset($_COOKIE['user_id']) && isset($_COOKIE['username']) && isset($_COOKIE['role'])) {
+    $_SESSION['user_id'] = $_COOKIE['user_id'];
+    $_SESSION['username'] = $_COOKIE['username'];
+    $_SESSION['role'] = $_COOKIE['role'];
 }
 ?>
 

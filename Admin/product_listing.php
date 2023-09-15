@@ -1,8 +1,6 @@
 <?php
-include('../dbconnection.php');
-
-
-   if (!isset($_SESSION['auth']) || $_SESSION['role'] !== "admin") {
+    include "../dbconnection.php";
+    if (!isset($_COOKIE['auth']) || $_COOKIE['role'] !== "admin") {
       echo "op";
       header('Location: ../index.php');
       exit(); // It's recommended to include an exit() statement after a header redirect

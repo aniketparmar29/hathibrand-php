@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $total_amount = $data['total_amount'];
         
         // Assuming you have a user authentication system and have a user ID in session
-        $user_id = $_SESSION['user_id'];
+        $user_id = $_COOKIE['user_id'];
         
         // Prepare and execute the SQL query to insert the order
         $sql = "INSERT INTO `orders`(`Address`, `Product`, `date`, `payment_status`, `total_amount`, `user_id`) 
