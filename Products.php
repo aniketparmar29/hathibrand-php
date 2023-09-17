@@ -17,9 +17,9 @@ if ($sort === 'price_htl') {
 } elseif ($sort === 'price_lth') {
     $order = 'ORDER BY product_price ASC';
 } elseif ($sort === 'weight_htl') {
-    $order = 'ORDER BY product_weight DESC';
+    $order = 'ORDER BY display_weight ASC ';
 } elseif ($sort === 'weight_lth') {
-    $order = 'ORDER BY product_weight ASC';
+    $order = 'ORDER BY display_weight DESC';
 }
 
 if ($order !== '') {

@@ -99,11 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
             </div>
             <div class="md:col-span-2 flex justify-between">
               <button id="saveAddressButton" type="button" class="w-1/2 md:w-auto bg-green-500 text-white font-semibold p-2 rounded">Save Address</button>
-              <button id="editAddressButton" class="w-1/2 md:w-auto bg-yellow-500 text-white font-semibold py-2 rounded hidden">Edit Address</button>
-          <!-- Delete Address Button -->
-          <button id="deleteAddressButton" class="w-1/2 md:w-auto bg-red-500 text-white font-semibold py-2 rounded hidden">Delete Address</button>
+              
             </div>
           </form>
+          <div><button id="editAddressButton" class="w-1/2 md:w-auto bg-yellow-500 text-white font-semibold p-2 rounded hidden">Edit Address</button>
+          <!-- Delete Address Button -->
+          <button id="deleteAddressButton" class="w-1/2 md:w-auto bg-red-500 text-white font-semibold p-2 rounded hidden">Delete Address</button></div>
         </div>
       </div>
     </div>
