@@ -1,34 +1,82 @@
 <?php
 require_once './dbconnection.php'; // Include your database connection script
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
-    $address = $_POST['address'];
-    $product = $_POST['product'];
-    $date = date('Y-m-d H:i:s'); // Current date and time
-    $payment_status = 'Pending'; // You can set the initial payment status as needed
-    $total_amount = $_POST['total_amount'];
-    $user_id = $_COOKIE['user_id']; // Assuming you have a user authentication system
+// Check if the user's ID (you may need to adjust how you retrieve this)
+$user_id = $_COOKIE['user_id'];
 
-    // Prepare and execute the SQL query to insert the order
-    $sql = "INSERT INTO `orders`(`Address`, `Product`, `date`, `payment_status`, `total_amount`, `user_id`) 
-            VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$address, $product, $date, $payment_status, $total_amount, $user_id]);
+// Check if the user has an existing address
+$sql = "SELECT * FROM `user_addresses` WHERE `user_id` = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    // Check if the order was successfully inserted
-    if ($stmt->rowCount() > 0) {
-        // Order placed successfully
-        // You can perform additional actions here, such as clearing the shopping cart
-        echo "Order placed successfully!";
+if ($result->num_rows > 0) {
+    // User has an existing address, fetch it
+    $addressData = $result->fetch_assoc();
+} else {
+    // User does not have an address, set $addressData to null
+    $addressData = null;
+}
+
+$stmt->close();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Handle the form submission
+    $cartItemsCookie = $_COOKIE['cart_items'];
+
+    // Check if the cart_items cookie is set
+    if (!isset($cartItemsCookie)) {
+        echo json_encode(array('success' => false, 'message' => 'Cart is empty or missing cart_items cookie.'));
+        exit;
+    }
+
+    // Retrieve cart items from the cookie
+    $cartItems = json_decode($cartItemsCookie, true);
+
+    // Check if the cart is empty
+    if (empty($cartItems)) {
+        echo json_encode(array('success' => false, 'message' => 'Cart is empty.'));
+        exit;
+    }
+
+    // Prepare the order data
+    $client_txn_id = generateRandomClientId();
+    $totalAmount = calculateTotalAmount($cartItems);
+    $status = 'Pending'; // You can set the initial status here
+    $address_id = $addressData['id']; // Replace with the user's address ID
+
+    // Insert the order into the database
+    $sql = "INSERT INTO `orders` (`client_txn_id`, `amount`, `product_info`, `status`, `address_id`, `created_at`, `user_id`)
+            VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sdssii", $client_txn_id, $totalAmount, json_encode($cartItems), $status, $address_id, $user_id);
+
+    if ($stmt->execute()) {
+        // Order placed successfully, clear the cart cookie
+        setcookie('cart_items', '', time() - 3600, '/'); // Clear the cart_items cookie
+        echo json_encode(array('success' => true, 'message' => 'Order placed successfully.'));
+        exit;
     } else {
-        // Failed to place the order
-        echo "Error placing the order.";
+        echo json_encode(array('success' => false, 'message' => 'Error placing the order.'));
+        exit;
     }
 }
 
+// Function to generate a random client transaction ID
+function generateRandomClientId() {
+    return "client_txn_" . uniqid();
+}
+
+// Function to calculate the total order amount
+function calculateTotalAmount($cart) {
+    $totalAmount = 0;
+    foreach ($cart as $item) {
+        $totalAmount += $item['productPrice'] * $item['quantity'];
+    }
+    return $totalAmount;
+}
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,10 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css?family=Work+Sans:200,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Work+Sans:200,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"/>
 </head>
 <body>
   <?php require './components/Navbar.php' ?>
@@ -58,54 +106,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
           <p class="font-semibold" id="totalAmount"></p>
         </div>
         <button id="placeOrderButton" class="mt-4 bg-blue-500 text-white font-semibold p-2 w-32 rounded" type="submit" name="placeOrder">Place Order</button>
-      </div>
-      <div class="w-full lg:w-1/2 mt-4 lg:mt-0">
-        <!-- Address Form -->
-        <div class="bg-white p-4 shadow">
-          <h2 class="text-lg font-bold mb-4">Shipping Address</h2>
-          <div id="addressContainer"></div>
-          <form id="addressForm" class="grid grid-cols-1 gap-4 md:grid-cols-2 hidden">
-            <div>
-              <label class="block">Name</label>
-              <input type="text" id="nameInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div>
-              <label class="block">Mobile</label>
-              <input type="tel" id="mobileInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div>
-              <label class="block">Alternative Mobile</label>
-              <input type="tel" id="altMobileInput" class="w-full p-2 border rounded">
-            </div>
-            <div>
-              <label class="block">District</label>
-              <input type="text" id="districtInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div>
-              <label class="block">Taluka</label>
-              <input type="text" id="talukaInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div>
-              <label class="block">Village</label>
-              <input type="text" id="villageInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div class="md:col-span-2">
-              <label class="block">Address</label>
-              <input type="text" id="addressInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div>
-              <label class="block">Pincode</label>
-              <input type="text" id="pincodeInput" class="w-full p-2 border rounded" required>
-            </div>
-            <div class="md:col-span-2 flex justify-between">
-              <button id="saveAddressButton" type="button" class="w-1/2 md:w-auto bg-green-500 text-white font-semibold p-2 rounded">Save Address</button>
-              
-            </div>
-          </form>
-          <div><button id="editAddressButton" class="w-1/2 md:w-auto bg-yellow-500 text-white font-semibold p-2 rounded hidden">Edit Address</button>
-          <!-- Delete Address Button -->
-          <button id="deleteAddressButton" class="w-1/2 md:w-auto bg-red-500 text-white font-semibold p-2 rounded hidden">Delete Address</button></div>
-        </div>
+
+        <!-- Display User's Address or Add/Edit Link -->
+        <?php if ($addressData !== null) : ?>
+          <!-- Display User's Address -->
+          <div class="mb-4">
+            <h2 class="text-xl font-semibold mb-2">Your Address</h2>
+            <p><strong>Name:</strong> <?php echo $addressData['name']; ?></p>
+            <p><strong>Mobile:</strong> <?php echo $addressData['mobile']; ?></p>
+            <p><strong>Alternative Mobile:</strong> <?php echo $addressData['alt_mobile']; ?></p>
+            <p><strong>District:</strong> <?php echo $addressData['district']; ?></p>
+            <p><strong>Taluka:</strong> <?php echo $addressData['taluka']; ?></p>
+            <p><strong>Village:</strong> <?php echo $addressData['village']; ?></p>
+            <p><strong>Address:</strong> <?php echo $addressData['address']; ?></p>
+            <p><strong>Pincode:</strong> <?php echo $addressData['pincode']; ?></p>
+            <!-- Edit Address Link -->
+            <a href="address.php" class="text-blue-500 hover:underline">
+              <i class="fas fa-edit"></i> Edit Address
+            </a>
+          </div>
+        <?php else : ?>
+          <!-- User doesn't have an address, provide a link to add one -->
+          <div class="mb-4">
+            <p>You don't have an address on record. Please <a href="address.php" class="text-blue-500 hover:underline">add your address</a>.</p>
+          </div>
+        <?php endif; ?>
+        
       </div>
     </div>
   </div>
@@ -113,103 +139,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['placeOrder'])) {
   <?php require './components/Footer.php' ?>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      function handlePlaceOrder() {
-    const addressData = JSON.parse(localStorage.getItem('shippingAddress'));
 
-    if (!addressData || Object.keys(addressData).length === 0) {
-        // If address is not available, show an alert and do not proceed
-        Swal.fire(
-            'Order Status',
-            'Please provide a shipping address before placing the order.',
-            'error'
-        );
-    } else {
-        // Retrieve cart items from localStorage
-        const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+document.addEventListener("DOMContentLoaded", function () {
+        const placeOrderButton = document.getElementById('placeOrderButton');
+        placeOrderButton.addEventListener('click', function (e) {
+            e.preventDefault();
 
-        if (cartItems.length === 0) {
-            // If the cart is empty, show an alert
-            Swal.fire(
-                'Order Status',
-                'Your cart is empty. Please add items to your cart before placing an order.',
-                'error'
-            );
-            return;
-        }
+            // Prepare the order data to send to the server
+            const client_txn_id = generateRandomClientId();
+            const totalAmount = calculateTotalAmount();
+            const cartData = JSON.parse(localStorage.getItem('cartItems')) || [];
+            const user_id = <?php echo $user_id; ?>; // You may need to pass the user ID from your PHP code
+            const address_id = <?php echo $addressData['id']; ?>; // Replace with the user's address ID
 
-        // Calculate the total amount from the cart items
-        const totalAmount = cartItems.reduce((total, item) => {
-            const itemPrice = item.productPrice * item.quantity;
-            return total + itemPrice;
-        }, 0);
+            if (cartData.length <= 0) {
+                // Cart is empty, show an alert
+                console.log(cartData.length);
+                Swal.fire({
+                    icon: "error",
+                    title: "Cart is empty",
+                    text: "Please add items to your cart before placing an order.",
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
+                return;
+            }
 
-        // Send the order data to the API using AJAX
-        const orderData = {
-            address: addressData,
-            product: cartItems, // Include the cart items as product data
-            total_amount: totalAmount, // Include the total amount
-        };
+            if (!user_id) {
+                // User is not logged in, handle accordingly
+                // You may redirect the user to the login page or display an error message
+                return;
+            }
 
-        // Send the order data to the API using AJAX
-        fetch('Place_order_api.php', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(orderData),
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    return response.json();
-})
-.then(data => {
-    // Handle the JSON response here
-    console.log(data)
-    if (data.status === 'success') {
-        // Order placed successfully
-        Swal.fire(
-            'Order Status',
-            'Order placed successfully!',
-            'success'
-        );
+            // Prepare the order data to send to the server
+            const orderData = {
+                client_txn_id,
+                amount: totalAmount,
+                product_info: cartData, // Send cartData directly, no need to stringify it here
+                user_id,
+                address_id,
+            };
 
-        // Clear the cart items in localStorage
-        localStorage.removeItem('cartItems');
+            // Send an AJAX request to create the order
+            fetch('create_order.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Set the content type to JSON
+                },
+                body: JSON.stringify(orderData), // Convert orderData to JSON string
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data);
+                if (data.success) {
+                    // Order placed successfully, show a success message and redirect
+                    Swal.fire({
+                        icon: "success",
+                        title: "Order Placed Successfully",
+                        text: "Your order has been placed successfully.",
+                        showConfirmButton: false,
+                        timer: 2000,
+                    }).then(function () {
+                        // Redirect to the order history page or any other page
+                        window.location.href = "order_history.php";
+                    });
+                } else {
+                    // Error occurred while placing the order, show an error message
+                    Swal.fire({
+                        icon: "error",
+                        title: "Order Placement Error",
+                        text:
+                        data.message ||
+                        "An error occurred while placing your order. Please try again later.",
+                        showConfirmButton: false,
+                        timer: 2000,
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                // Handle other errors if needed
+            });
+        });
 
-        // Update the cart display
-        displayCartItemsCount();
-        displayCartItems();
-    } else {
-        // Error placing the order
-        Swal.fire(
-            'Order Status',
-            'Error placing the order.',
-            'error'
-        );
-    }
-})
-.catch(error => {
-    // Handle fetch errors here, including invalid JSON responses
-    console.error('Fetch error:', error);
-    Swal.fire(
-        'Order Status',
-        'Error placing the order. Please try again later.',
-        'error'
-    );
-});
-
-    }
+        // Define functions for generating a random client transaction ID and calculating the total order amount
+function generateRandomClientId() {
+    // Implement your logic to generate a unique client transaction ID
+    // You can use a combination of date, user ID, and random characters
+    return "client_txn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 10);
 }
 
-
-
-      const placeOrderButton = document.getElementById('placeOrderButton');
-      placeOrderButton.addEventListener('click', handlePlaceOrder);
-
-    
+function calculateTotalAmount() {
+    // Implement your logic to calculate the total order amount based on cart items
+    // You can iterate through the cart data and sum the item prices
+    const cartData = JSON.parse(localStorage.getItem('cartItems')) || [];
+    let totalAmount = 0;
+    cartData.forEach(item => {
+        totalAmount += item.productPrice * item.quantity;
+    });
+    return totalAmount;
+}
+       
       function displayCartItems() {
   const cartData = JSON.parse(localStorage.getItem('cartItems')) || [];
   const cartItemsContainer = document.getElementById('cartItemsContainer');
@@ -304,130 +339,7 @@ function removeCartItem(productId, productWeight) {
         // Call the displayCartItems function on page load
         displayCartItems();
 
-      // Function to handle the "Save Address" button click
-      function handleSaveAddress(event) {
-        event.preventDefault(); // Prevent the default form submission behavior
-        const name = document.getElementById('nameInput').value;
-        const mobile = document.getElementById('mobileInput').value;
-        const altMobile = document.getElementById('altMobileInput').value;
-        const district = document.getElementById('districtInput').value;
-        const taluka = document.getElementById('talukaInput').value;
-        const village = document.getElementById('villageInput').value;
-        const address = document.getElementById('addressInput').value;
-        const pincode = document.getElementById('pincodeInput').value;
-        const addressData = { name, mobile, altMobile, district, taluka, village, address, pincode };
-
-        // Save the address data to localStorage
-        localStorage.setItem('shippingAddress', JSON.stringify(addressData));
-
-        // Hide the address form and display the address details
-        document.getElementById('addressForm').classList.add('hidden');
-        document.getElementById('addressContainer').innerHTML = `
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Mobile:</strong> ${mobile}</p>
-          <p><strong>Alternative Mobile:</strong> ${altMobile || 'N/A'}</p>
-          <p><strong>District:</strong> ${district}</p>
-          <p><strong>Taluka:</strong> ${taluka}</p>
-          <p><strong>Village:</strong> ${village}</p>
-          <p><strong>Address:</strong> ${address}</p>
-          <p><strong>Pincode:</strong> ${pincode}</p>
-        `;
-
-        // Show the "Edit Address" and "Delete Address" buttons
-        document.getElementById('editAddressButton').classList.remove('hidden');
-        document.getElementById('deleteAddressButton').classList.remove('hidden');
-        document.getElementById('saveAddressButton').classList.add('hidden');
-      }
-
-      // Function to handle the "Edit Address" button click
-      function handleEditAddress() {
-        // Show the address form for editing address and populate the form fields with existing address data
-        const addressData = JSON.parse(localStorage.getItem('shippingAddress')) || {};
-        document.getElementById('addressForm').classList.remove('hidden');
-        document.getElementById('addressContainer').innerHTML = ''; // Clear the address details container
-        document.getElementById('saveAddressButton').classList.remove('hidden');
-        document.getElementById('editAddressButton').classList.add('hidden');
-        document.getElementById('deleteAddressButton').classList.add('hidden');
-        document.getElementById('nameInput').value = addressData.name || '';
-        document.getElementById('mobileInput').value = addressData.mobile || '';
-        document.getElementById('altMobileInput').value = addressData.altMobile || '';
-        document.getElementById('districtInput').value = addressData.district || '';
-        document.getElementById('talukaInput').value = addressData.taluka || '';
-        document.getElementById('villageInput').value = addressData.village || '';
-        document.getElementById('addressInput').value = addressData.address || '';
-        document.getElementById('pincodeInput').value = addressData.pincode || '';
-      }
-
-
-
-      function displayAddressDetails() {
-        const addressData = JSON.parse(localStorage.getItem('shippingAddress'));
-
-        if (addressData && Object.keys(addressData).length !== 0) {
-          // If address is available, show the address details along with edit and delete buttons
-          document.getElementById('addressContainer').innerHTML = `
-            <p><strong>Name:</strong> ${addressData.name}</p>
-            <p><strong>Mobile:</strong> ${addressData.mobile}</p>
-            <p><strong>Alternative Mobile:</strong> ${addressData.altMobile || 'N/A'}</p>
-            <p><strong>District:</strong> ${addressData.district}</p>
-            <p><strong>Taluka:</strong> ${addressData.taluka}</p>
-            <p><strong>Village:</strong> ${addressData.village}</p>
-            <p><strong>Address:</strong> ${addressData.address}</p>
-            <p><strong>Pincode:</strong> ${addressData.pincode}</p>
-          `;
-          document.getElementById('addressForm').classList.add('hidden');
-          document.getElementById('saveAddressButton').classList.add('hidden');
-          document.getElementById('editAddressButton').classList.remove('hidden');
-          document.getElementById('deleteAddressButton').classList.remove('hidden');
-        } else {
-          // If no address is available, show the address form to add a new address
-          document.getElementById('addressContainer').innerHTML = '';
-          document.getElementById('addressForm').classList.remove('hidden');
-          document.getElementById('saveAddressButton').classList.remove('hidden');
-          document.getElementById('editAddressButton').classList.add('hidden');
-          document.getElementById('deleteAddressButton').classList.add('hidden');
-          // Clear the input fields of the address form
-          document.getElementById('nameInput').value = '';
-          document.getElementById('mobileInput').value = '';
-          document.getElementById('altMobileInput').value = '';
-          document.getElementById('districtInput').value = '';
-          document.getElementById('talukaInput').value = '';
-          document.getElementById('villageInput').value = '';
-          document.getElementById('addressInput').value = '';
-          document.getElementById('pincodeInput').value = '';
-        }
-      }
-      displayAddressDetails();
-      // Function to handle the "Delete Address" button click
-      function handleDeleteAddress() {
-        // Delete the address data from localStorage and update the display
-        localStorage.removeItem('shippingAddress');
-        document.getElementById('addressContainer').innerHTML = ''; // Clear the container
-        document.getElementById('addressForm').classList.remove('hidden'); // Show the address form
-        document.getElementById('saveAddressButton').classList.remove('hidden');
-        document.getElementById('editAddressButton').classList.add('hidden');
-        document.getElementById('deleteAddressButton').classList.add('hidden');
-      }
-
-      // Add event listeners to the buttons
-      const addAddressButton = document.getElementById('saveAddressButton');
-      const editAddressButton = document.getElementById('editAddressButton');
-      const deleteAddressButton = document.getElementById('deleteAddressButton');
-
-      addAddressButton.addEventListener('click', handleSaveAddress);
-      editAddressButton.addEventListener('click', handleEditAddress);
-      deleteAddressButton.addEventListener('click', handleDeleteAddress);
-
-      // AJAX to update address in localStorage on form submission
-      const addressForm = document.getElementById('addressForm');
-      addressForm.addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent the default form submission behavior
-        handleSaveAddress(event); // Call handleSaveAddress to save the address details
-
-
-
       });
-    });
   </script>
 </body>
 </html>
