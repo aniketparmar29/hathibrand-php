@@ -50,6 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql = "INSERT INTO `orders` (`client_txn_id`, `amount`, `product_info`, `status`, `address_id`, `created_at`, `user_id`)
             VALUES (?, ?, ?, ?, ?, NOW(), ?)";
     $stmt = $conn->prepare($sql);
+    
+    if (!$stmt) {
+        // Handle the prepare error
+        echo json_encode(array('success' => false, 'message' => 'Error preparing the SQL statement.'));
+        exit;
+    }
+    
     $stmt->bind_param("sdssii", $client_txn_id, $totalAmount, json_encode($cartItems), $status, $address_id, $user_id);
 
     if ($stmt->execute()) {
