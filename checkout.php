@@ -77,7 +77,6 @@ $stmt->close();
             <p>You don't have an address on record. Please <a href="address.php" class="text-blue-500 hover:underline">add your address</a>.</p>
           </div>
         <?php endif; ?>
-        
       </div>
     </div>
   </div>
@@ -100,8 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (cartData.length <= 0) {
                 // Cart is empty, show an alert
-                console.log(cartData.length);
-                Swal.fire({
+                    Swal.fire({
                     icon: "error",
                     title: "Cart is empty",
                     text: "Please add items to your cart before placing an order.",
@@ -125,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 user_id,
                 address_id,
             };
-            console.log(orderData)
             
             fetch('create_order.php', {
                 method: 'POST',
@@ -136,8 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
 
 .then((response) => {
-    console.log(response);
-    if (!response.ok) {
+       if (!response.ok) {
         throw new Error('Network response was not ok');
     }
     
@@ -145,10 +141,8 @@ document.addEventListener("DOMContentLoaded", function () {
     return response.text();
 })
 .then((redirectUrl) => {
-    // Clean up the URL by removing extra slashes and any surrounding double quotes
-    redirectUrl = redirectUrl.replace(/["']/g, ''); // Remove surrounding quotes
-    redirectUrl = redirectUrl.replace(/\/+/g, '/'); // Remove extra slashes
-    window.open(redirectUrl, '_blank');
+   
+     window.open(redirectUrl, '_blank');
 })
 .catch((error) => {
   Swal.fire({
@@ -212,7 +206,6 @@ function calculateTotalAmount() {
       const cartItemDetails = document.createElement('div');
       cartItemDetails.classList.add('ml-4', 'flex-grow');
 
-      // Create elements for product name, weight, quantity, and price
       const cartItemName = document.createElement('p');
       cartItemName.textContent = item.productName;
       const cartItemWeight = document.createElement('p');
