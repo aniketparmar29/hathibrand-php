@@ -1,62 +1,102 @@
 <?php
 require_once './dbconnection.php'; // Include your database connection script
 
-// Check if the user's ID (you may need to adjust how you retrieve this)
-$user_id = $_COOKIE['user_id'];
-
-// Check if the user has an existing address
-$sql = "SELECT * FROM `user_addresses` WHERE `user_id` = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    // User has an existing address, fetch it
-    $addressData = $result->fetch_assoc();
-} else {
-    // User does not have an address, set $addressData to null
-    $addressData = null;
-}
-
-$stmt->close();
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle the form submission
-    $cartItemsCookie = $_COOKIE['cart_items'];
+    date_default_timezone_set("Asia/Kolkata");
 
-    // Check if the cart_items cookie is set
-    if (!isset($cartItemsCookie)) {
-        echo json_encode(array('success' => false, 'message' => 'Cart is empty or missing cart_items cookie.'));
+    // Get the raw POST data and decode it as JSON
+    $rawPostData = file_get_contents('php://input');
+    $postData = json_decode($rawPostData, true);
+
+    // Check if JSON decoding was successful
+    if ($postData === null) {
+        echo json_encode(array('success' => false, 'message' => 'Invalid JSON data.'));
         exit;
     }
 
-    // Retrieve cart items from the cookie
-    $cartItems = json_decode($cartItemsCookie, true);
+    // Extract data from the decoded JSON
+    $client_txn_id = $postData['client_txn_id'];
+    $totalAmount = $postData['amount'];
+    $cartItems = $postData['product_info'];
+    $status = $postData['status'];
+    $address_id = $postData['address_id'];
+    $user_id = $postData['user_id'];
+    $created_at = date('Y-m-d H:i:s');
+    // Encode $cartItems as JSON
+    $encodedCartItems = json_encode($cartItems);
 
-    // Check if the cart is empty
-    if (empty($cartItems)) {
-        echo json_encode(array('success' => false, 'message' => 'Cart is empty.'));
-        exit;
-    }
-
-    // Prepare the order data
-    $client_txn_id = generateRandomClientId();
-    $totalAmount = calculateTotalAmount($cartItems);
-    $status = 'Pending'; // You can set the initial status here
-    $address_id = $addressData['id']; // Replace with the user's address ID
-
-    // Insert the order into the database
-    $sql = "INSERT INTO `orders` (`client_txn_id`, `amount`, `product_info`, `status`, `address_id`, `created_at`, `user_id`)
-            VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+    // Fetch address details based on the provided $address_id
+    $sql = "SELECT * FROM `user_addresses` WHERE `id` = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sdssii", $client_txn_id, $totalAmount, json_encode($cartItems), $status, $address_id, $user_id);
+    $stmt->bind_param("i", $address_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Address found, fetch the address data
+        $addressData = $result->fetch_assoc();
+    } else {
+        // Address not found, handle the error or provide a default address
+        $addressData = null; // You can set a default address or handle the error here
+    }
+
+    // Check if the address data is available
+    if (!$addressData) {
+        echo json_encode(array('success' => false, 'message' => 'Address not found.'));
+        exit;
+    }
+
+    // Insert data into the `orders` table
+    $sql = "INSERT INTO `orders` (`client_txn_id`, `amount`, `product_info`, `status`, `address_id`, `created_at`, `user_id`)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    // Updated bind_param with the right number of bind variables
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sdssisi", $client_txn_id, $totalAmount, $encodedCartItems, $status, $address_id, $created_at, $user_id);
 
     if ($stmt->execute()) {
         // Order placed successfully, clear the cart cookie
         setcookie('cart_items', '', time() - 3600, '/'); // Clear the cart_items cookie
-        echo json_encode(array('success' => true, 'message' => 'Order placed successfully.'));
-        exit;
+        // Payment request code
+        $key = "eec16523-acc0-45f8-9b07-f2ac9b34fbd1"; // Your API Token
+        $post_data = new stdClass();
+        $post_data->key = $key;
+        $post_data->client_txn_id = $client_txn_id; // Use the same transaction ID
+        $post_data->amount = "$totalAmount";
+        $post_data->p_info = "product_name";
+        $post_data->customer_name = $addressData['name']; // Use customer's name from the address
+        $post_data->customer_email = $addressData['email']; // Use customer's email from the address
+        $post_data->customer_mobile = $addressData['mobile']; // Use customer's mobile from the address
+        $post_data->redirect_url = "https://hathibrand.in/order_check.php"; // Automatically appends parameters
+        $post_data->udf1 = "extradata";
+        $post_data->udf2 = "extradata";
+        $post_data->udf3 = "extradata";
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.ekqr.in/api/create_order',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode($post_data),
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            ),
+        ));
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $result = json_decode($response, true);
+        if ($result['status'] == true) {
+            echo '<script type="text/javascript" language="javascript">window.open("' . $result['data']['payment_url'] . '");</script>';
+            exit();
+        }
+
+        echo '<div class="alert alert-danger">' . $result['msg'] . '</div>';
     } else {
         echo json_encode(array('success' => false, 'message' => 'Error placing the order.'));
         exit;
@@ -64,19 +104,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     echo json_encode(array('success' => false, 'message' => 'Invalid request method.'));
     exit;
-}
-
-// Function to generate a random client transaction ID
-function generateRandomClientId() {
-    return "client_txn_" . uniqid();
-}
-
-// Function to calculate the total order amount
-function calculateTotalAmount($cart) {
-    $totalAmount = 0;
-    foreach ($cart as $item) {
-        $totalAmount += $item['productPrice'] * $item['quantity'];
-    }
-    return $totalAmount;
 }
 ?>

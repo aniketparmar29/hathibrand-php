@@ -114,6 +114,7 @@ function calculateTotalAmount($cart) {
             <h2 class="text-xl font-semibold mb-2">Your Address</h2>
             <p><strong>Name:</strong> <?php echo $addressData['name']; ?></p>
             <p><strong>Mobile:</strong> <?php echo $addressData['mobile']; ?></p>
+            <p><strong>Email:</strong> <?php echo $addressData['email']; ?></p>
             <p><strong>Alternative Mobile:</strong> <?php echo $addressData['alt_mobile']; ?></p>
             <p><strong>District:</strong> <?php echo $addressData['district']; ?></p>
             <p><strong>Taluka:</strong> <?php echo $addressData['taluka']; ?></p>
@@ -175,11 +176,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const orderData = {
                 client_txn_id,
                 amount: totalAmount,
+                status:"Pending",
                 product_info: cartData, // Send cartData directly, no need to stringify it here
                 user_id,
                 address_id,
             };
-
+            console.log(orderData)
             // Send an AJAX request to create the order
             fetch('create_order.php', {
                 method: 'POST',
@@ -189,15 +191,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 body: JSON.stringify(orderData), // Convert orderData to JSON string
             })
             .then((response) => {
+              console.log(response)
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.json();
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return response.json();
+                } else {
+                    // Handle the case where the response is not JSON (e.g., it might be HTML)
+                    return Promise.reject("Response is not JSON");
+                }
             })
             .then((data) => {
-                console.log(data);
-                if (data.success) {
-                    // Order placed successfully, show a success message and redirect
+                // Handle the JSON data as needed
+                if (data && data.success) {
+                    // Handle a successful response
                     Swal.fire({
                         icon: "success",
                         title: "Order Placed Successfully",
@@ -209,13 +218,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         window.location.href = "order_history.php";
                     });
                 } else {
-                    // Error occurred while placing the order, show an error message
+                    // Handle an error response
                     Swal.fire({
                         icon: "error",
                         title: "Order Placement Error",
-                        text:
-                        data.message ||
-                        "An error occurred while placing your order. Please try again later.",
+                        text: data.message || "An error occurred while placing your order. Please try again later.",
                         showConfirmButton: false,
                         timer: 2000,
                     });
@@ -225,6 +232,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error("Error:", error);
                 // Handle other errors if needed
             });
+
+
+
         });
 
         // Define functions for generating a random client transaction ID and calculating the total order amount

@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Save or update User Address
         $name = $_POST['name'];
         $mobile = $_POST['mobile'];
+        $email = $_POST['email'];
         $alt_mobile = $_POST['alt_mobile'];
         $district = $_POST['district'];
         $taluka = $_POST['taluka'];
@@ -34,20 +35,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($addressData)) {
             // Insert new address
-            $sql = "INSERT INTO `user_addresses` (`user_id`, `name`, `mobile`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode`) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO `user_addresses` (`user_id`, `name`, `mobile`,`email`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode`) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,? )";
         } else {
             // Update existing address
             $sql = "UPDATE `user_addresses` 
-                SET `name` = ?, `mobile` = ?, `alt_mobile` = ?, `district` = ?, `taluka` = ?, `village` = ?, `address` = ?, `pincode` = ?
+                SET `name` = ?, `mobile` = ?,`email` = ?, `alt_mobile` = ?, `district` = ?, `taluka` = ?, `village` = ?, `address` = ?, `pincode` = ?
                 WHERE `user_id` = ?";
         }
 
         $stmt = $conn->prepare($sql);
         if (empty($addressData)) {
-            $stmt->bind_param("isssssssi", $user_id, $name, $mobile, $alt_mobile, $district, $taluka, $village, $address, $pincode);
+            $stmt->bind_param("isssssssi", $user_id, $name, $mobile,$email, $alt_mobile, $district, $taluka, $village, $address, $pincode);
         } else {
-            $stmt->bind_param("ssssssssi", $name, $mobile, $alt_mobile, $district, $taluka, $village, $address, $pincode, $user_id);
+            $stmt->bind_param("ssssssssi", $name, $mobile,$email, $alt_mobile, $district, $taluka, $village, $address, $pincode, $user_id);
         }
 
         if ($stmt->execute()) {
@@ -127,6 +128,10 @@ if (!empty($addressData)) {
                     <input type="text" id="mobile" name="mobile" required class="w-full border border-gray-300 rounded p-2">
                 </div>
                 <div>
+                    <label for="mobile" class="block font-semibold">Email:</label>
+                    <input type="email" id="mobile" name="email" required class="w-full border border-gray-300 rounded p-2">
+                </div>
+                <div>
                     <label for="alt_mobile" class="block font-semibold">Alternative Mobile:</label>
                     <input type="text" id="alt_mobile" name="alt_mobile" class="w-full border border-gray-300 rounded p-2">
                 </div>
@@ -171,6 +176,7 @@ if (!empty($addressData)) {
                 </div>
                 <p><strong>Name:</strong> <?php echo $addressData['name']; ?></p>
                 <p><strong>Mobile:</strong> <?php echo $addressData['mobile']; ?></p>
+                <p><strong>Email:</strong> <?php echo $addressData['email']; ?></p>
                 <p><strong>Alternative Mobile:</strong> <?php echo $addressData['alt_mobile']; ?></p>
                 <p><strong>District:</strong> <?php echo $addressData['district']; ?></p>
                 <p><strong>Taluka:</strong> <?php echo $addressData['taluka']; ?></p>
@@ -187,6 +193,10 @@ if (!empty($addressData)) {
                 <div>
                     <label for="mobile" class="block font-semibold">Mobile:</label>
                     <input type="text" id="mobile" name="mobile" value="<?php echo $addressData['mobile']; ?>" required class="w-full border border-gray-300 rounded p-2">
+                </div>
+                <div>
+                    <label for="email" class="block font-semibold">Email:</label>
+                    <input type="text" id="email" name="email" value="<?php echo $addressData['email']; ?>" required class="w-full border border-gray-300 rounded p-2">
                 </div>
                 <div>
                     <label for="alt_mobile" class="block font-semibold">Alternative Mobile:</label>
