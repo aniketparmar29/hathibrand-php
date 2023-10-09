@@ -21,61 +21,7 @@ if ($result->num_rows > 0) {
 
 $stmt->close();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle the form submission
-    $cartItemsCookie = $_COOKIE['cart_items'];
 
-    // Check if the cart_items cookie is set
-    if (!isset($cartItemsCookie)) {
-        echo json_encode(array('success' => false, 'message' => 'Cart is empty or missing cart_items cookie.'));
-        exit;
-    }
-
-    // Retrieve cart items from the cookie
-    $cartItems = json_decode($cartItemsCookie, true);
-
-    // Check if the cart is empty
-    if (empty($cartItems)) {
-        echo json_encode(array('success' => false, 'message' => 'Cart is empty.'));
-        exit;
-    }
-
-    // Prepare the order data
-    $client_txn_id = generateRandomClientId();
-    $totalAmount = calculateTotalAmount($cartItems);
-    $status = 'Pending'; // You can set the initial status here
-    $address_id = $addressData['id']; // Replace with the user's address ID
-
-    // Insert the order into the database
-    $sql = "INSERT INTO `orders` (`client_txn_id`, `amount`, `product_info`, `status`, `address_id`, `created_at`, `user_id`)
-            VALUES (?, ?, ?, ?, ?, NOW(), ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sdssii", $client_txn_id, $totalAmount, json_encode($cartItems), $status, $address_id, $user_id);
-
-    if ($stmt->execute()) {
-        // Order placed successfully, clear the cart cookie
-        setcookie('cart_items', '', time() - 3600, '/'); // Clear the cart_items cookie
-        echo json_encode(array('success' => true, 'message' => 'Order placed successfully.'));
-        exit;
-    } else {
-        echo json_encode(array('success' => false, 'message' => 'Error placing the order.'));
-        exit;
-    }
-}
-
-// Function to generate a random client transaction ID
-function generateRandomClientId() {
-    return "client_txn_" . uniqid();
-}
-
-// Function to calculate the total order amount
-function calculateTotalAmount($cart) {
-    $totalAmount = 0;
-    foreach ($cart as $item) {
-        $totalAmount += $item['productPrice'] * $item['quantity'];
-    }
-    return $totalAmount;
-}
 ?>
 
 <!DOCTYPE html>
@@ -98,7 +44,6 @@ function calculateTotalAmount($cart) {
     <h1 class="text-3xl font-bold mt-8 mb-4 text-center">Checkout</h1>
     <div class="flex flex-col lg:flex-row">
       <div class="container lg:w-2/3 mx-auto">
-        <!-- Cart Items -->
         <div id="cartItemsContainer"></div>
         <!-- Total Amount -->
         <div id="totalAmountContainer" class="flex justify-between p-2 border-b border-gray-200">
@@ -167,8 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (!user_id) {
-                // User is not logged in, handle accordingly
-                // You may redirect the user to the login page or display an error message
+               
                 return;
             }
 
@@ -177,63 +121,46 @@ document.addEventListener("DOMContentLoaded", function () {
                 client_txn_id,
                 amount: totalAmount,
                 status:"Pending",
-                product_info: cartData, // Send cartData directly, no need to stringify it here
+                product_info: cartData, 
                 user_id,
                 address_id,
             };
             console.log(orderData)
-            // Send an AJAX request to create the order
+            
             fetch('create_order.php', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Set the content type to JSON
+                    'Content-Type': 'application/json', 
                 },
-                body: JSON.stringify(orderData), // Convert orderData to JSON string
+                body: JSON.stringify(orderData), 
             })
-            .then((response) => {
-              console.log(response)
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    return response.json();
-                } else {
-                    // Handle the case where the response is not JSON (e.g., it might be HTML)
-                    return Promise.reject("Response is not JSON");
-                }
-            })
-            .then((data) => {
-                // Handle the JSON data as needed
-                if (data && data.success) {
-                    // Handle a successful response
-                    Swal.fire({
-                        icon: "success",
-                        title: "Order Placed Successfully",
-                        text: "Your order has been placed successfully.",
-                        showConfirmButton: false,
-                        timer: 2000,
-                    }).then(function () {
-                        // Redirect to the order history page or any other page
-                        window.location.href = "order_history.php";
-                    });
-                } else {
-                    // Handle an error response
-                    Swal.fire({
-                        icon: "error",
-                        title: "Order Placement Error",
-                        text: data.message || "An error occurred while placing your order. Please try again later.",
-                        showConfirmButton: false,
-                        timer: 2000,
-                    });
-                }
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-                // Handle other errors if needed
-            });
 
-
+.then((response) => {
+    console.log(response);
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    
+    // Get the URL from the response body (assuming it's a string)
+    return response.text();
+})
+.then((redirectUrl) => {
+    // Clean up the URL by removing extra slashes and any surrounding double quotes
+    redirectUrl = redirectUrl.replace(/["']/g, ''); // Remove surrounding quotes
+    redirectUrl = redirectUrl.replace(/\/+/g, '/'); // Remove extra slashes
+    window.open(redirectUrl, '_blank');
+})
+.catch((error) => {
+  Swal.fire({
+                    icon: "error",
+                    title: "Something went wrong",
+                    text: "Please check address and cart",
+                    showConfirmButton: false,
+                    timer: 2000,
+  });
+    console.error("Error:", error);
+    // Handle other errors if needed
+});
 
         });
 

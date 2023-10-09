@@ -48,7 +48,7 @@ if (isset($_COOKIE['auth']) && $_COOKIE['auth'] === '1' && isset($_COOKIE['user_
                 <div id="dropdownHover" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownHoverButton">
                         <li>
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
+                            <a href="./my_order.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
                         </li>
                         <?php if (isset($_COOKIE['role']) && $_COOKIE['role'] === "admin") { ?>
                             <li>
@@ -145,7 +145,7 @@ echo '<span id="cartItemCount" class="bg-red-600 rounded-full text-white px-2 py
                 <div id="dropdown-id" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownHoverButton">
                         <li>
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
+                            <a href="./my_order.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My Order</a>
                         </li>
                         <?php if (isset($_COOKIE['role']) && $_COOKIE['role'] === "admin") { ?>
                             <li>

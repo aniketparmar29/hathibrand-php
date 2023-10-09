@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = $postData['status'];
     $address_id = $postData['address_id'];
     $user_id = $postData['user_id'];
-    $created_at = date('Y-m-d H:i:s');
+    $created_at =  date("d-m-Y");
     // Encode $cartItems as JSON
     $encodedCartItems = json_encode($cartItems);
 
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $result = json_decode($response, true);
         if ($result['status'] == true) {
-            echo '<script type="text/javascript" language="javascript">window.open("' . $result['data']['payment_url'] . '");</script>';
+            echo $result['data']["payment_url"];
             exit();
         }
 
