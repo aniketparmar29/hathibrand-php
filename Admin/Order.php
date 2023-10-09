@@ -1,11 +1,30 @@
 <?php
-    include "../dbconnection.php";
-    if (!isset($_COOKIE['auth']) || $_COOKIE['role'] !== "admin") {
-      echo "op";
-      header('Location: ../index.php');
-      exit(); // It's recommended to include an exit() statement after a header redirect
-  }
+require_once '../dbconnection.php'; // Include your database connection script
 
+$date_filter = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Retrieve the date from the form and convert it to "Y-m-d" format
+    $input_date = $_POST["date"];
+    $date_obj = DateTime::createFromFormat('d-m-Y', $input_date);
+    if ($date_obj !== false) {
+        $date_filter = $date_obj->format('Y-m-d');
+    } else {
+        echo "Invalid date format. Please use dd-mm-yyyy.";
+        exit;
+    }
+
+    // Query to fetch orders filtered by date
+    $sql = "SELECT * FROM `orders` WHERE DATE(`created_at`) = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $date_filter);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    // Query to fetch all orders (no date filter)
+    $sql = "SELECT `id`, `client_txn_id`, `amount`, `status`, `created_at`, `user_id`, `address_id` FROM `orders`";
+    $result = $conn->query($sql);
+}
 ?>
 
 <!DOCTYPE html>
@@ -14,8 +33,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin-Hathibrand</title>
-    <link rel="shortcut icon" href="./assets/Logo/Favicon.ico" type="image/x-icon">
+    <title>Order Admin Page</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
@@ -72,96 +90,87 @@
       </ul>
    </div>
 </aside>
-
 <div class="p-4 sm:ml-64">
    <div class="p-4  border-gray-200  rounded-lg dark:border-gray-700">
-   <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-semibold mb-4">Admin Dashboard</h1>
+ 
+    <h1 class="text-3xl font-semibold mt-4 mb-8">Order Admin Page</h1>
 
-   
-
-      <!-- Summary: Total Orders, Amount, Users, Products -->
-      <?php
-
-// Fetch count of categories
-$categoryCountQuery = "SELECT COUNT(*) AS category_count FROM categories";
-$categoryCountResult = mysqli_query($conn, $categoryCountQuery);
-if ($categoryCountResult === false) {
-    die("Category count query failed: " . mysqli_error($conn));
-}
-$categoryCount = mysqli_fetch_assoc($categoryCountResult)['category_count'];
-
-// Fetch count of users
-$userCountQuery = "SELECT COUNT(*) AS user_count FROM user";
-$userCountResult = mysqli_query($conn, $userCountQuery);
-if ($userCountResult === false) {
-    die("User count query failed: " . mysqli_error($conn));
-}
-$userCount = mysqli_fetch_assoc($userCountResult)['user_count'];
-
-
-mysqli_close($conn);
-?>
-
-<div class="bg-white p-4 mb-2 rounded shadow">
-  <h2 class="text-lg font-semibold mb-4">Summary</h2>
-  <div class="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-4 gap-4">
-    <div>
-      <p class="text-sm font-semibold">Total Orders</p>
-      <p class="text-2xl font-bold">0</p>
+    <form method="POST" class="mb-4">
+    <div class="flex space-x-4">
+        <div>
+            <label for="date" class="block font-semibold">Select Date:</label>
+            <input type="date" name="date" id="date" value="<?php echo $date_filter; ?>" class="border rounded-md p-2">
+        </div>
+        <div>
+            <button type="submit" class="bg-blue-500 text-white font-semibold px-4 py-2 rounded-md">Filter by Date</button>
+        </div>
     </div>
-    <div>
-      <p class="text-sm font-semibold">Total Amount</p>
-      <p class="text-2xl font-bold">00000</p>
-    </div>
-    <div>
-      <p class="text-sm font-semibold">Total Users</p>
-      <p class="text-2xl font-bold"><?php echo $userCount; ?></p>
-    </div>
-    <div>
-      <p class="text-sm font-semibold">Total Products</p>
-      <p class="text-2xl font-bold"><?php echo $categoryCount ?></p>
-    </div>
-  </div>
+</form>
+
+    <!-- Order Table -->
+<div class="overflow-x-auto">
+    <table class="min-w-full table-auto mb-8">
+        <thead>
+            <tr>
+                <th class="px-4 py-2">Order ID</th>
+                <th class="px-4 py-2">Client Transaction ID</th>
+                <th class="px-4 py-2">Amount</th>
+                <th class="px-4 py-2">Status</th>
+                <th class="px-4 py-2">Created At</th>
+                <th class="px-4 py-2">User ID</th>
+                <th class="px-4 py-2">Address ID</th>
+                <th class="px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>{$row['id']}</td>";
+                echo "<td>{$row['client_txn_id']}</td>";
+                echo "<td>{$row['amount']}</td>";
+                echo "<td>{$row['status']}</td>";
+                echo "<td>{$row['created_at']}</td>";
+                echo "<td>{$row['user_id']}</td>";
+                echo "<td>{$row['address_id']}</td>";
+                echo "<td><button class='bg-blue-500 text-white font-semibold px-2 py-1 rounded-md view-invoice' data-order-id='{$row['id']}'>View Invoice</button></td>";
+                echo "</tr>";
+            }
+            ?>
+        </tbody>
+    </table>
 </div>
 
-      <div >
-      <!-- Chart: Categories of Orders -->
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-4">DailyOrders</h2>
-        <canvas id="orderChart" width="800" height="400"></canvas>
-      </div>
-    </div>
-  </div>
+    <!-- Invoice Section (Initially Hidden) -->
+    <div id="invoice-section" class="hidden bg-white p-8 rounded-lg shadow-lg">
+    <!-- Invoice content will be displayed here using AJAX -->
+</div>
    </div>
 </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function () {
+        // Handle View Invoice button click
+        $(".view-invoice").click(function () {
+            var orderId = $(this).data("order-id");
 
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
-<script>
-       // Chart: Categories of Orders
-    var orderChart = new Chart(document.getElementById('orderChart'), {
-      type: 'bar',
-      data: {
-        labels: ['09-06-2023', '09-06-2023', '09-06-2023'],
-        datasets: [{
-          label: 'Orders',
-          data: [80, 120, 90],
-          backgroundColor: '#FF0000',
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
+            // Make an AJAX request to fetch and display the invoice content
+            $.ajax({
+                url: "generate_invoice.php", // Replace with your PHP script to generate the invoice content
+                type: "GET",
+                data: { orderId: orderId },
+                success: function (response) {
+                    // Display the invoice content in the "invoice-section" div
+                    $("#invoice-section").html(response);
+                    $("#invoice-section").removeClass("hidden");
+                },
+                error: function () {
+                    alert("Error fetching the invoice.");
+                },
+            });
+        });
     });
-  </script>
-</body>
+</script></body>
 </html>
