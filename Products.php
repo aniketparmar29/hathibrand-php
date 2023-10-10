@@ -6,11 +6,10 @@ $sort = isset($_GET['sort']) ? $_GET['sort'] : ''; // Sorting option: price_htl,
 $product_category = isset($_GET['product_category']) ? $_GET['product_category'] : ''; // Filtering option: product_category
 
 // Construct the SQL query based on the sorting and filtering options
-$sql = "SELECT * FROM categories";
+$sql = "SELECT * FROM categories ";
 if ($product_category !== '') {
     $sql .= " WHERE product_category = '$product_category'";
 }
-
 $order = '';
 if ($sort === 'price_htl') {
     $order = 'ORDER BY product_price DESC';
@@ -24,8 +23,9 @@ if ($sort === 'price_htl') {
 
 if ($order !== '') {
     $sql .= " $order";
+}else{
+  $sql .= " ORDER BY RAND()";
 }
-
 $result = $conn->query($sql);
 ?>
 

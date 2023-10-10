@@ -22,7 +22,7 @@
     <div class="container mx-auto grid gap-8 grid-cols-2 lg:grid-cols-4">
     <?php
 // Fetch products from the database
-$query = "SELECT * FROM categories limit 4";
+$query = "SELECT * FROM categories ORDER BY RAND () limit 4";
 $result = mysqli_query($conn, $query);
 
 if (!$result) {
