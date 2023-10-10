@@ -116,7 +116,7 @@ if (isset($_GET['id'])) {
                         $priceList = json_decode($row['price_list'], true);
                         foreach ($weights as $index => $weight) { ?>
                             <label class="flex items-center  border-2 p-2 rounded-lg ">
-                                <input type="radio" name="selectedWeight" value="<?php echo $weight; ?>" <?php echo ($index === 0) ? 'checked' : ''; ?>>
+                                <input type="radio" name="selectedWeight" value="<?php echo $weight; ?>">
                                 <span class="ml-2"><?php echo $weight; ?></span>
                             </label>
                         <?php } ?>

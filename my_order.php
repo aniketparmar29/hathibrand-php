@@ -23,7 +23,7 @@
             $user_id = $_COOKIE['user_id'];
 
             // Retrieve all orders for the user
-            $sql = "SELECT * FROM orders WHERE user_id = ?";
+            $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY id desc";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
@@ -37,6 +37,7 @@
                         <p class="text-lg font-semibold">Order ID: <?php echo $row['id']; ?></p>
                         <p>Payment: <?php echo $row['status']; ?></p>
                         <p>Created At: <?php echo $row['created_at']; ?></p>
+                        <p>Total: ₹<?php echo $row['amount']; ?></p>
                         
                         <!-- Display product cards -->
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -48,7 +49,7 @@
                                     <img src="./Admin/<?php echo $product['productImage']; ?>" alt="<?php echo $product['productName']; ?>" class="w-full h-48 object-cover">
                                     <div class="p-4">
                                         <p class="text-lg font-semibold"><?php echo $product['productName']; ?></p>
-                                        <p class="text-gray-700">Price: $<?php echo $product['productPrice']; ?></p>
+                                        <p class="text-gray-700">Price: ₹<?php echo $product['productPrice']; ?></p>
                                         <p class="text-gray-700">Weight: <?php echo $product['productWeight']; ?></p>
                                         <p class="text-gray-700">Quantity: <?php echo $product['quantity']; ?></p>
                                     </div>

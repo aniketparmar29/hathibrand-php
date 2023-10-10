@@ -133,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 echo "<td>{$row['created_at']}</td>";
                 echo "<td>{$row['user_id']}</td>";
                 echo "<td>{$row['address_id']}</td>";
-                echo "<td><button class='bg-blue-500 text-white font-semibold px-2 py-1 rounded-md view-invoice' data-order-id='{$row['id']}'>View Invoice</button></td>";
+                echo '<td><a href="./generate_invoice.php?orderId=' . $row['id'] . '&addressId=' . $row['address_id'] . '" target="_blank" class="bg-blue-500 text-white font-semibold px-2 py-1 my-2 rounded-md view-invoice">Download Pdf</a></td>';
                 echo "</tr>";
             }
             ?>
@@ -151,26 +151,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    $(document).ready(function () {
-        // Handle View Invoice button click
-        $(".view-invoice").click(function () {
-            var orderId = $(this).data("order-id");
+// $(document).ready(function () {
+//     // Handle View Invoice button click
+//     $(".view-invoice").click(function () {
+//         var orderId = $(this).data("order-id");
 
-            // Make an AJAX request to fetch and display the invoice content
-            $.ajax({
-                url: "generate_invoice.php", // Replace with your PHP script to generate the invoice content
-                type: "GET",
-                data: { orderId: orderId },
-                success: function (response) {
-                    // Display the invoice content in the "invoice-section" div
-                    $("#invoice-section").html(response);
-                    $("#invoice-section").removeClass("hidden");
-                },
-                error: function () {
-                    alert("Error fetching the invoice.");
-                },
-            });
-        });
-    });
+//         // Make an AJAX request to fetch and display the invoice content
+//         $.ajax({
+//             url: "generate_invoice.php",
+//             type: "GET",
+//             data: { orderId: orderId },
+//             success: function () {
+//                 // The PDF is generated and streamed to the browser,
+//                 // so there's nothing specific to do here.
+//             },
+//             error: function () {
+//                 alert("Error generating the invoice.");
+//             },
+//         });
+//     });
+// });
+
 </script></body>
 </html>

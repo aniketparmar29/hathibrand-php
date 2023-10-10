@@ -6,20 +6,23 @@ $message = '';
 
 // Check if the user has an existing address
 $user_id = $_COOKIE['user_id'];
-$sql = "SELECT * FROM `user_addresses` WHERE `user_id` = ?";
+$existingAddress = null;
+
+$sql = "SELECT `id`, `user_id`, `name`, `mobile`, `email`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode` 
+        FROM `user_addresses` 
+        WHERE `user_id` = ?";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    // User has an existing address, fetch address details
-    $addressData = $result->fetch_assoc();
-} else {
-    // User does not have an address, initialize an empty array
-    $addressData = array();
+    // Address exists, fetch the data
+    $existingAddress = $result->fetch_assoc();
 }
 
+// Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['saveAddress'])) {
         // Save or update User Address
@@ -33,22 +36,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address = $_POST['address'];
         $pincode = $_POST['pincode'];
 
-        if (empty($addressData)) {
+        if (empty($_POST['address_id'])) {
             // Insert new address
-            $sql = "INSERT INTO `user_addresses` (`user_id`, `name`, `mobile`,`email`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode`) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,? )";
+            $sql = "INSERT INTO `user_addresses` (`user_id`, `name`, `mobile`, `email`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode`) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("isssssssss", $user_id, $name, $mobile, $email, $alt_mobile, $district, $taluka, $village, $address, $pincode);
         } else {
             // Update existing address
+            $address_id = $_POST['address_id'];
             $sql = "UPDATE `user_addresses` 
-                SET `name` = ?, `mobile` = ?,`email` = ?, `alt_mobile` = ?, `district` = ?, `taluka` = ?, `village` = ?, `address` = ?, `pincode` = ?
-                WHERE `user_id` = ?";
-        }
-
-        $stmt = $conn->prepare($sql);
-        if (empty($addressData)) {
-            $stmt->bind_param("isssssssi", $user_id, $name, $mobile,$email, $alt_mobile, $district, $taluka, $village, $address, $pincode);
-        } else {
-            $stmt->bind_param("ssssssssi", $name, $mobile,$email, $alt_mobile, $district, $taluka, $village, $address, $pincode, $user_id);
+                SET `name` = ?, `mobile` = ?, `email` = ?, `alt_mobile` = ?, `district` = ?, `taluka` = ?, `village` = ?, `address` = ?, `pincode` = ?
+                WHERE `user_id` = ? AND `id` = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssssssssssi", $name, $mobile, $email, $alt_mobile, $district, $taluka, $village, $address, $pincode, $user_id, $address_id);
         }
 
         if ($stmt->execute()) {
@@ -57,19 +58,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "Error saving the address: " . $stmt->error;
         }
         $stmt->close();
-    } elseif (isset($_POST['deleteAddress']) && !empty($addressData)) {
+    } elseif (isset($_POST['deleteAddress'])) {
         // Delete User Address
-        $address_id = $addressData['id'];
+        $address_id = $_POST['address_id'];
 
-        // Prepare and execute the SQL query to delete the address using conn
+        // Prepare and execute the SQL query to delete the address
         $sql = "DELETE FROM `user_addresses` WHERE `user_id` = ? AND `id` = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $user_id, $address_id);
 
         if ($stmt->execute()) {
-            $message  =  "Address deleted successfully!";
-            // Reset $addressData to an empty array as the address is deleted
-            $addressData = array();
+            $message = "Address deleted successfully!";
         } else {
             $message = "Error deleting the address: " . $stmt->error;
         }
@@ -77,182 +76,147 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Reload the addressData after changes
-if (!empty($addressData)) {
-    $address_id = $addressData['id'];
-    $sql = "SELECT * FROM `user_addresses` WHERE `id` = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $address_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // Fetch the updated address details
-        $addressData = $result->fetch_assoc();
-    }
-    $stmt->close();
-}
+// Return a JSON response
+$response = array("message" => $message);
+echo json_encode($response);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Address Management</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <!-- Add your custom CSS styles here -->
-    <style>
-        /* Add your custom styles here */
-    </style>
+    <title>Address CRUD</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
 </head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-xl mx-auto bg-white rounded-lg p-6 shadow">
+        <h1 class="text-2xl font-semibold mb-4">Address CRUD</h1>
+        
+        <!-- Display a message if any -->
+        <?php if (!empty($message)) : ?>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline"><?= $message ?></span>
+            </div>
+        <?php endif; ?>
 
-
-<body>
-    <?php require './components/Navbar.php' ?>
-
-<div class="bg-gray-100 min-h-screen flex items-center justify-center">
-
-
-    <div class="bg-white rounded-lg p-8 shadow-md max-w-md w-full">
-        <h1 class="text-2xl font-bold mb-4">User Address</h1>
-        <?php if (empty($addressData)) : ?>
-            <!-- Address Form -->
-            <form method="POST" action="" class="space-y-4">
-                <div>
-                    <label for="name" class="block font-semibold">Name:</label>
-                    <input type="text" id="name" name="name" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="mobile" class="block font-semibold">Mobile:</label>
-                    <input type="text" id="mobile" name="mobile" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="mobile" class="block font-semibold">Email:</label>
-                    <input type="email" id="mobile" name="email" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="alt_mobile" class="block font-semibold">Alternative Mobile:</label>
-                    <input type="text" id="alt_mobile" name="alt_mobile" class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="district" class="block font-semibold">District:</label>
-                    <input type="text" id="district" name="district" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="taluka" class="block font-semibold">Taluka:</label>
-                    <input type="text" id="taluka" name="taluka" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="village" class="block font-semibold">Village:</label>
-                    <input type="text" id="village" name="village" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="address" class="block font-semibold">Address:</label>
-                    <textarea id="address" name="address" rows="4" required class="w-full border border-gray-300 rounded p-2"></textarea>
-                </div>
-                <div>
-                    <label for="pincode" class="block font-semibold">Pincode:</label>
-                    <input type="text" id="pincode" name="pincode" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div class="text-right">
-                    <button type="submit" name="saveAddress" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Address</button>
-                </div>
-            </form>
-        <?php else : ?>
-            <!-- Display Address Details -->
-            <div class="space-y-2" id="dspaddress">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Address Details</h2>
-                    <div class="space-x-2">
-                        <a href="#" id="editAddress" class="text-blue-500 hover:underline flex-col justify-center items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M2 2a2 2 0 012-2h14a2 2 0 012 2V16a2 2 0 01-2 2H4a2 2 0 01-2-2V2zm2-1a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V2a1 1 0 00-1-1H4z"/>
-                                <path d="M10 4a1 1 0 110 2h-4a1 1 0 110-2h4zm0 4a1 1 0 1100 2h-4a1 1 0 110-2h4zm0 4a1 1 0 110 2h-4a1 1 0 110-2h4zm0 4a1 1 0 110 2h-4a1 1 0 110-2h4z"/>
-                            </svg>
-                            <p>Edit/Delete</p>
-                        </a>
+        <?php if ($existingAddress !== null) : ?>
+            <!-- Address Edit and Delete Options -->
+            <h2 class="text-xl font-semibold mb-4">Edit Address</h2>
+            <!-- Display existing address data here and provide edit and delete options -->
+            <form action="your_controller.php" method="POST" class="space-y-4">
+                <input type="hidden" name="address_id" value="<?= $existingAddress['id'] ?>">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="name" class="block font-medium text-gray-700">Name</label>
+                        <input type="text" name="name" id="name" value="<?= $existingAddress['name'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="mobile" class="block font-medium text-gray-700">Mobile</label>
+                        <input type="text" name="mobile" id="mobile" value="<?= $existingAddress['mobile'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="email" class="block font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" id="email" value="<?= $existingAddress['email'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="alt_mobile" class="block font-medium text-gray-700">Alternate Mobile</label>
+                        <input type="text" name="alt_mobile" id="alt_mobile" value="<?= $existingAddress['alt_mobile'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="district" class="block font-medium text-gray-700">District</label>
+                        <input type="text" name="district" id="district" value="<?= $existingAddress['district'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="taluka" class="block font-medium text-gray-700">Taluka</label>
+                        <input type="text" name="taluka" id="taluka" value="<?= $existingAddress['taluka'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="village" class="block font-medium text-gray-700">Village</label>
+                        <input type="text" name="village" id="village" value="<?= $existingAddress['village'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="address" class="block font-medium text-gray-700">Address</label>
+                        <textarea name="address" id="address" rows="4" class="mt-1 p-2 block w-full rounded-md border border-gray-300"><?= $existingAddress['address'] ?></textarea>
+                    </div>
+                    <div>
+                        <label for="pincode" class="block font-medium text-gray-700">Pincode</label>
+                        <input type="text" name="pincode" id="pincode" value="<?= $existingAddress['pincode'] ?>" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
                     </div>
                 </div>
-                <p><strong>Name:</strong> <?php echo $addressData['name']; ?></p>
-                <p><strong>Mobile:</strong> <?php echo $addressData['mobile']; ?></p>
-                <p><strong>Email:</strong> <?php echo $addressData['email']; ?></p>
-                <p><strong>Alternative Mobile:</strong> <?php echo $addressData['alt_mobile']; ?></p>
-                <p><strong>District:</strong> <?php echo $addressData['district']; ?></p>
-                <p><strong>Taluka:</strong> <?php echo $addressData['taluka']; ?></p>
-                <p><strong>Village:</strong> <?php echo $addressData['village']; ?></p>
-                <p><strong>Address:</strong> <?php echo $addressData['address']; ?></p>
-                <p><strong>Pincode:</strong> <?php echo $addressData['pincode']; ?></p>
-            </div>
-            <form method="POST" action="" class="mt-4 space-y-4 hidden" id="editForm">
-                <input type="hidden" name="address_id" value="<?php echo $addressData['id']; ?>">
-                <div>
-                    <label for="name" class="block font-semibold">Name:</label>
-                    <input type="text" id="name" name="name" value="<?php echo $addressData['name']; ?>" required class="w-full border border-gray-300 rounded p-2">
+                <!-- Add edit and delete buttons here -->
+            </form>
+        <?php else : ?>
+            <!-- Address Add Form -->
+            <h2 class="text-xl font-semibold mb-4">Add Address</h2>
+            <form action="your_controller.php" method="POST" class="space-y-4">
+                <input type="hidden" name="address_id" value="">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="name" class="block font-medium text-gray-700">Name</label>
+                        <input type="text" name="name" id="name" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="mobile" class="block font-medium text-gray-700">Mobile</label>
+                        <input type="text" name="mobile" id="mobile" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="email" class="block font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" id="email" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="alt_mobile" class="block font-medium text-gray-700">Alternate Mobile</label>
+                        <input type="text" name="alt_mobile" id="alt_mobile" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="district" class="block font-medium text-gray-700">District</label>
+                        <input type="text" name="district" id="district" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="taluka" class="block font-medium text-gray-700">Taluka</label>
+                        <input type="text" name="taluka" id="taluka" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="village" class="block font-medium text-gray-700">Village</label>
+                        <input type="text" name="village" id="village" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="address" class="block font-medium text-gray-700">Address</label>
+                        <textarea name="address" id="address" rows="4" class="mt-1 p-2 block w-full rounded-md border border-gray-300"></textarea>
+                    </div>
+                    <div>
+                        <label for="pincode" class="block font-medium text-gray-700">Pincode</label>
+                        <input type="text" name="pincode" id="pincode" class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                    </div>
                 </div>
-                <div>
-                    <label for="mobile" class="block font-semibold">Mobile:</label>
-                    <input type="text" id="mobile" name="mobile" value="<?php echo $addressData['mobile']; ?>" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="email" class="block font-semibold">Email:</label>
-                    <input type="text" id="email" name="email" value="<?php echo $addressData['email']; ?>" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="alt_mobile" class="block font-semibold">Alternative Mobile:</label>
-                    <input type="text" id="alt_mobile" name="alt_mobile" value="<?php echo $addressData['alt_mobile']; ?>" class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="district" class="block font-semibold">District:</label>
-                    <input type="text" id="district" name="district" value="<?php echo $addressData['district']; ?>" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="taluka" class="block font-semibold">Taluka:</label>
-                    <input type="text" id="taluka" name="taluka" value="<?php echo $addressData['taluka']; ?>" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="village" class="block font-semibold">Village:</label>
-                    <input type="text" id="village" name="village" value="<?php echo $addressData['village']; ?>" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div>
-                    <label for="address" class="block font-semibold">Address:</label>
-                    <textarea id="address" name="address" rows="4" required class="w-full border border-gray-300 rounded p-2"><?php echo $addressData['address']; ?></textarea>
-                </div>
-                <div>
-                    <label for="pincode" class="block font-semibold">Pincode:</label>
-                    <input type="text" id="pincode" name="pincode" value="<?php echo $addressData['pincode']; ?>" required class="w-full border border-gray-300 rounded p-2">
-                </div>
-                <div class="text-right">
-                    <button type="submit" name="editAddress" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Save Changes</button>
-                    <button type="submit" name="deleteAddress" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete Address</button>
+                <!-- Add a button to save the new address -->
+                <div class="flex items-center">
+                    <button type="submit" name="saveAddress" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Save Address</button>
                 </div>
             </form>
         <?php endif; ?>
 
+        <!-- Address List -->
+        <ul class="mt-8 space-y-4">
+            <?php if (isset($addresses) && is_array($addresses)) : ?>
+                <?php foreach ($addresses as $address) : ?>
+                    <li class="bg-gray-50 p-4 border border-gray-200 rounded-lg">
+                        <span class="text-lg font-semibold"><?= $address['name'] ?></span>
+                        <p><?= $address['address'] ?></p>
+                        
+                        <!-- Add edit and delete buttons with appropriate form -->
+                        <form action="your_controller.php" method="POST" class="mt-2">
+                            <input type="hidden" name="address_id" value="<?= $address['id'] ?>">
+                            <button type="submit" name="editAddress" class="px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Edit</button>
+                            <button type="submit" name="deleteAddress" class="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete</button>
+                        </form>
+                    </li>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <p>No addresses found.</p>
+            <?php endif; ?>
+        </ul>
     </div>
-    </div>
-    <?php require './components/Footer.php' ?>
-    <script>
-        const editForm = document.getElementById('editForm');
-        const editAddressLink = document.getElementById('editAddress');
-        const dspaddress = document.getElementById('dspaddress');
-
-        editAddressLink.addEventListener('click', function (e) {
-            e.preventDefault();
-            editForm.classList.toggle('hidden');
-            dspaddress.classList.toggle('hidden');
-        });
-
-        // Add SweetAlert for success messages
-        <?php if ($message) : ?>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: '<?php echo $message; ?>',
-                confirmButtonText: 'OK'
-            });
-        <?php endif; ?>
-    </script>
-    
-</body> 
+</body>
 </html>

@@ -6,6 +6,44 @@
       exit(); // It's recommended to include an exit() statement after a header redirect
   }
 
+// Fetch count of total orders
+$totalOrdersQuery = "SELECT COUNT(*) AS total_orders FROM orders";
+$totalOrdersResult = mysqli_query($conn, $totalOrdersQuery);
+if ($totalOrdersResult === false) {
+    die("Total orders count query failed: " . mysqli_error($conn));
+}
+$totalOrders = mysqli_fetch_assoc($totalOrdersResult)['total_orders'];
+
+// Fetch count of pending orders (assuming "pending" is the order status for pending orders)
+$pendingOrdersQuery = "SELECT COUNT(*) AS pending_orders FROM orders WHERE status = 'pending'";
+$pendingOrdersResult = mysqli_query($conn, $pendingOrdersQuery);
+if ($pendingOrdersResult === false) {
+    die("Pending orders count query failed: " . mysqli_error($conn));
+}
+$pendingOrders = mysqli_fetch_assoc($pendingOrdersResult)['pending_orders'];
+
+// Fetch total amount from successful orders
+$totalAmountQuery = "SELECT SUM(amount) AS total_amount FROM orders WHERE status = 'success'";
+$totalAmountResult = mysqli_query($conn, $totalAmountQuery);
+if ($totalAmountResult === false) {
+    die("Total amount query failed: " . mysqli_error($conn));
+}
+$totalAmount = mysqli_fetch_assoc($totalAmountResult)['total_amount'];
+$categoryCountQuery = "SELECT COUNT(*) AS category_count FROM categories";
+$categoryCountResult = mysqli_query($conn, $categoryCountQuery);
+if ($categoryCountResult === false) {
+    die("Category count query failed: " . mysqli_error($conn));
+}
+$categoryCount = mysqli_fetch_assoc($categoryCountResult)['category_count'];
+
+// Fetch count of users
+$userCountQuery = "SELECT COUNT(*) AS user_count FROM user";
+$userCountResult = mysqli_query($conn, $userCountQuery);
+if ($userCountResult === false) {
+    die("User count query failed: " . mysqli_error($conn));
+}
+$userCount = mysqli_fetch_assoc($userCountResult)['user_count'];
+mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -80,50 +118,29 @@
 
    
 
-      <!-- Summary: Total Orders, Amount, Users, Products -->
-      <?php
-
-// Fetch count of categories
-$categoryCountQuery = "SELECT COUNT(*) AS category_count FROM categories";
-$categoryCountResult = mysqli_query($conn, $categoryCountQuery);
-if ($categoryCountResult === false) {
-    die("Category count query failed: " . mysqli_error($conn));
-}
-$categoryCount = mysqli_fetch_assoc($categoryCountResult)['category_count'];
-
-// Fetch count of users
-$userCountQuery = "SELECT COUNT(*) AS user_count FROM user";
-$userCountResult = mysqli_query($conn, $userCountQuery);
-if ($userCountResult === false) {
-    die("User count query failed: " . mysqli_error($conn));
-}
-$userCount = mysqli_fetch_assoc($userCountResult)['user_count'];
-
-
-mysqli_close($conn);
-?>
 
 <div class="bg-white p-4 mb-2 rounded shadow">
-  <h2 class="text-lg font-semibold mb-4">Summary</h2>
-  <div class="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-4 gap-4">
-    <div>
-      <p class="text-sm font-semibold">Total Orders</p>
-      <p class="text-2xl font-bold">0</p>
+    <h2 class="text-lg font-semibold mb-4">Summary</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-4 gap-4">
+        <div>
+            <p class="text-sm font-semibold">Total Orders</p>
+            <p class="text-2xl font-bold"><?php echo $totalOrders; ?></p>
+        </div>
+        <div>
+            <p class="text-sm font-semibold">Total Amount</p>
+            <p class="text-2xl font-bold"><?php echo $totalAmount; ?></p>
+        </div>
+        <div>
+            <p class="text-sm font-semibold">Total Users</p>
+            <p class="text-2xl font-bold"><?php echo $userCount; ?></p>
+        </div>
+        <div>
+            <p class="text-sm font-semibold">Total Products</p>
+            <p class="text-2xl font-bold"><?php echo $categoryCount; ?></p>
+        </div>
     </div>
-    <div>
-      <p class="text-sm font-semibold">Total Amount</p>
-      <p class="text-2xl font-bold">00000</p>
-    </div>
-    <div>
-      <p class="text-sm font-semibold">Total Users</p>
-      <p class="text-2xl font-bold"><?php echo $userCount; ?></p>
-    </div>
-    <div>
-      <p class="text-sm font-semibold">Total Products</p>
-      <p class="text-2xl font-bold"><?php echo $categoryCount ?></p>
-    </div>
-  </div>
 </div>
+
 
       <div >
       <!-- Chart: Categories of Orders -->
