@@ -1,298 +1,177 @@
-<?php
-// Include the database connection file
-include_once 'dbconnection.php';
-
-// Get the user ID from the cookie (you should set this cookie when the user logs in)
-$user_id = $_COOKIE['user_id'];
-
-// Initialize variables for form fields and error messages
-$id = "";
-$name = "";
-$mobile = "";
-$email = "";
-$alt_mobile = "";
-$district = "";
-$taluka = "";
-$village = "";
-$address = "";
-$pincode = "";
-
-$errors = [];
-
-// Check if an operation is requested (create, update, or delete)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['create'])) {
-        // Handle create operation here
-        // Validate and sanitize input data
-        $name = $_POST['name'];
-        $mobile = $_POST['mobile'];
-        $email = $_POST['email'];
-        $alt_mobile = $_POST['alt_mobile'];
-        $district = $_POST['district'];
-        $taluka = $_POST['taluka'];
-        $village = $_POST['village'];
-        $address = $_POST['address'];
-        $pincode = $_POST['pincode'];
-
-        // Validate inputs
-        if (empty($name)) {
-            $errors[] = "Name is required.";
-        }
-        // Add more validation rules as needed
-
-        if (empty($errors)) {
-            // Insert the new address into the database
-            $sql = "INSERT INTO `user_addresses` (`user_id`, `name`, `mobile`, `email`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode`)
-                    VALUES ('$user_id', '$name', '$mobile', '$email', '$alt_mobile', '$district', '$taluka', '$village', '$address', '$pincode')";
-            
-            if ($conn->query($sql) === TRUE) {
-                echo "Address added successfully.";
-            } else {
-                echo "Error adding address: " . $conn->error;
-            }
-        }
-    } elseif (isset($_POST['update'])) {
-        // Handle update operation here
-        $id = $_POST['id'];
-        // Validate and sanitize input data
-        $name = $_POST['name'];
-        $mobile = $_POST['mobile'];
-        $email = $_POST['email'];
-        $alt_mobile = $_POST['alt_mobile'];
-        $district = $_POST['district'];
-        $taluka = $_POST['taluka'];
-        $village = $_POST['village'];
-        $address = $_POST['address'];
-        $pincode = $_POST['pincode'];
-
-        // Validate inputs
-        if (empty($name)) {
-            $errors[] = "Name is required.";
-        }
-        // Add more validation rules as needed
-
-        if (empty($errors)) {
-            // Update the address in the database
-            $sql = "UPDATE `user_addresses` SET `name`='$name', `mobile`='$mobile', `email`='$email', `alt_mobile`='$alt_mobile', `district`='$district', `taluka`='$taluka', `village`='$village', `address`='$address', `pincode`='$pincode' WHERE `id`='$id'";
-            
-            if ($conn->query($sql) === TRUE) {
-                echo "Address updated successfully.";
-            } else {
-                echo "Error updating address: " . $conn->error;
-            }
-        }
-    } elseif (isset($_POST['delete'])) {
-        // Handle delete operation here
-        $delete_id = $_POST['delete'];
-
-        // Implement the delete operation
-        $sql = "DELETE FROM `user_addresses` WHERE `id` = $delete_id";
-        if ($conn->query($sql) === TRUE) {
-            echo "Address deleted successfully.";
-        } else {
-            echo "Error deleting address: " . $conn->error;
-        }
-    }
-}
-
-// Fetch user addresses from the database
-$sql = "SELECT `id`, `user_id`, `name`, `mobile`, `email`, `alt_mobile`, `district`, `taluka`, `village`, `address`, `pincode` FROM `user_addresses` WHERE `user_id` = $user_id";
-$result = $conn->query($sql);
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Address CRUD App</title>
-    <!-- Include Tailwind CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <title>Address CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-semibold mb-4">User Addresses</h1>
+<body>
+<?php include './components/Navbar.php'?>
 
-        <!-- Display addresses or form based on conditions -->
-        <?php if (!isset($_POST['edit_id'])): ?>
-            <!-- Display addresses -->
-            <div class="mb-4">
-                <?php
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<div class='bg-white rounded-lg p-4 mb-4'>";
-                        echo "<h2 class='text-lg font-semibold mb-2'>{$row['name']}</h2>";
-                        echo "<div class='mb-2'><strong>Mobile:</strong> {$row['mobile']}</div>";
-                        echo "<div class='mb-2'><strong>Email:</strong> {$row['email']}</div>";
-                        echo "<div class='mb-2'><strong>Alternate Mobile:</strong> {$row['alt_mobile']}</div>";
-                        echo "<div class='mb-2'><strong>District:</strong> {$row['district']}</div>";
-                        echo "<div class='mb-2'><strong>Taluka:</strong> {$row['taluka']}</div>";
-                        echo "<div class='mb-2'><strong>Village:</strong> {$row['village']}</div>";
-                        echo "<div class='mb-2'><strong>Address:</strong> {$row['address']}</div>";
-                        echo "<div><strong>Pincode:</strong> {$row['pincode']}</div>";
-                        echo "<div class='mt-4'>";
-                        echo "<form method='POST'>";
-                        echo "<input type='hidden' name='edit_id' value='{$row['id']}'>";
-                        echo "<button type='submit' class='bg-blue-500 text-white px-2 py-1' name='edit'>Edit</button>";
-                        echo "<button type='submit' class='bg-red-500 text-white px-2 py-1' name='delete' value='{$row['id']}'>Delete</button>";
-                        echo "</form>";
-                        echo "</div>";
-                        echo "</div>";
-                    }
-                } else {
-                    echo "No addresses found.";
-                }
-                ?>
-            </div>
-        <?php endif; ?>
+    <div class="max-w-md mx-auto bg-white rounded p-4 shadow-lg">
+        <h1 class="text-2xl font-bold mb-4">Address CRUD</h1>
 
-        <!-- Edit address form -->
-        <?php if (isset($_POST['edit_id'])): ?>
-            <h2 class="text-xl font-semibold mb-2">Edit Address</h2>
-            <form method="POST" action="index.php">
-                <?php
-                $edit_id = $_POST['edit_id'];
-                // Fetch the address details from the database based on edit_id
-                $sql = "SELECT * FROM `user_addresses` WHERE `id` = $edit_id";
-                $edit_result = $conn->query($sql);
-                if ($edit_result->num_rows > 0) {
-                    $edit_row = $edit_result->fetch_assoc();
-                    // Populate form fields with values from the database
-                    $name = $edit_row['name'];
-                    $mobile = $edit_row['mobile'];
-                    $email = $edit_row['email'];
-                    $alt_mobile = $edit_row['alt_mobile'];
-                    $district = $edit_row['district'];
-                    $taluka = $edit_row['taluka'];
-                    $village = $edit_row['village'];
-                    $address = $edit_row['address'];
-                    $pincode = $edit_row['pincode'];
-                    $id = $edit_row['id'];
-                }
-                ?>
+        <div id="address-form" class="mb-4">
+            <label for="name" class="block">Name:</label>
+            <input type="text" id="name" class="w-full border p-2 mb-2 rounded">
+            <label for="mobile" class="block">Mobile:</label>
+            <input type="tel" id="mobile" class="w-full border p-2 mb-2 rounded">
+            <label for="email" class="block">Email:</label>
+            <input type="email" id="email" class="w-full border p-2 mb-2 rounded">
+            <label for="alt_mobile" class="block">Alternate Mobile:</label>
+            <input type="tel" id="alt_mobile" class="w-full border p-2 mb-2 rounded">
+            <label for="district" class="block">District:</label>
+            <input type="text" id="district" class="w-full border p-2 mb-2 rounded">
+            <label for "taluka" class="block">Taluka:</label>
+            <input type="text" id="taluka" class="w-full border p-2 mb-2 rounded">
+            <label for="village" class="block">Village:</label>
+            <input type="text" id="village" class="w-full border p-2 mb-2 rounded">
+            <label for="address" class="block">Address:</label>
+            <input type="text" id="address" class="w-full border p-2 mb-2 rounded">
+            <label for="pincode" class="block">PIN Code:</label>
+            <input type="text" id="pincode" class="w-full border p-2 mb-4 rounded">
+            <button id="save-address" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Save Address</button>
+        </div>
 
-                <!-- Rest of the form fields here with values populated from the database -->
-                <div class="mb-2">
-                    <label for="name">Name:</label>
-                    <input type="text" name="name" id="name" value="<?php echo $name; ?>" required>
-                </div>
-
-                <div class="mb-2">
-                    <label for="mobile">Mobile:</label>
-                    <input type="text" name="mobile" id="mobile" value="<?php echo $mobile; ?>" required>
-                </div>
-
-                <div class="mb-2">
-                    <label for="email">Email:</label>
-                    <input type="email" name="email" id="email" value="<?php echo $email; ?>" required>
-                </div>
-
-                <div class="mb-2">
-                    <label for="alt_mobile">Alternate Mobile:</label>
-                    <input type="text" name="alt_mobile" id="alt_mobile" value="<?php echo $alt_mobile; ?>">
-                </div>
-
-                <div class="mb-2">
-                    <label for="district">District:</label>
-                    <input type="text" name="district" id="district" value="<?php echo $district; ?>" required>
-                </div>
-
-                <div class="mb-2">
-                    <label for="taluka">Taluka:</label>
-                    <input type="text" name="taluka" id="taluka" value="<?php echo $taluka; ?>" required>
-                </div>
-
-                <div class="mb-2">
-                    <label for="village">Village:</label>
-                    <input type="text" name="village" id="village" value="<?php echo $village; ?>" required>
-                </div>
-
-                <div class="mb-2">
-                    <label for="address">Address:</label>
-                    <textarea name="address" id="address" rows="3" required><?php echo $address; ?></textarea>
-                </div>
-
-                <div class="mb-2">
-                    <label for="pincode">Pincode:</label>
-                    <input type="text" name="pincode" id="pincode" value="<?php echo $pincode; ?>" required>
-                </div>
-
-                <input type="hidden" name="id" value="<?php echo $id; ?>">
-                
-                <div class="mb-4">
-                    <button type="submit" class="bg-blue-500 text-white px-2 py-1" name="update">Update</button>
-                </div>
-            </form>
-        <?php endif; ?>
-
-        <!-- Address form for creating new address -->
-        <?php if (!isset($_POST['edit_id']) && $result->num_rows == 0): ?>
-            <div class="mt-4">
-                <h2 class="text-xl font-semibold mb-2">Add New Address</h2>
-                <form method="POST" action="index.php">
-                    <!-- Rest of the form fields for creating a new address -->
-                    <div class="mb-2">
-                        <label for="name">Name:</label>
-                        <input type="text" name="name" id="name" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="mobile">Mobile:</label>
-                        <input type="text" name="mobile" id="mobile" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="email">Email:</label>
-                        <input type="email" name="email" id="email" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="alt_mobile">Alternate Mobile:</label>
-                        <input type="text" name="alt_mobile" id="alt_mobile">
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="district">District:</label>
-                        <input type="text" name="district" id="district" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="taluka">Taluka:</label>
-                        <input type="text" name="taluka" id="taluka" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="village">Village:</label>
-                        <input type="text" name="village" id="village" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="address">Address:</label>
-                        <textarea name="address" id="address" rows="3" required></textarea>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="pincode">Pincode:</label>
-                        <input type="text" name="pincode" id="pincode" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <button type="submit" class="bg-green-500 text-white px-2 py-1" name="create">Create</button>
-                    </div>
-                </form>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Display error messages -->
-        <?php if (!empty($errors)): ?>
-            <div class="mt-4">
-                <ul class="text-red-500">
-                    <?php foreach ($errors as $error): ?>
-                        <li><?php echo $error; ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
+        <div id="address-display" class="hidden">
+            <h2 class="text-lg font-bold mb-2">Stored Address</h2>
+            <p><strong>Name:</strong> <span id="display-name"></span></p>
+            <p><strong>Mobile:</strong> <span id="display-mobile"></span></p>
+            <p><strong>Email:</strong> <span id="display-email"></span></p>
+            <p><strong>Alternate Mobile:</strong> <span id="display-alt_mobile"></span></p>
+            <p><strong>District:</strong> <span id="display-district"></span></p>
+            <p><strong>Taluka:</strong> <span id="display-taluka"></span></p>
+            <p><strong>Village:</strong> <span id="display-village"></span></p>
+            <p><strong>Address:</strong> <span id="display-address"></span></p>
+            <p><strong>PIN Code:</strong> <span id="display-pincode"></span></p>
+            <button id="edit-address" class="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-700">Edit Address</button>
+            <button id="delete-address" class="bg-red-500 text-white p-2 rounded hover:bg-red-700">Delete Address</button>
+        </div>
     </div>
+    <?php include './components/Footer.php'?>
+
+    <script>
+        const addressForm = $("#address-form");
+        const addressDisplay = $("#address-display");
+        const saveButton = $("#save-address");
+        const editButton = $("#edit-address");
+        const deleteButton = $("#delete-address");
+
+        const nameInput = $("#name");
+        const mobileInput = $("#mobile");
+        const emailInput = $("#email");
+        const altMobileInput = $("#alt_mobile");
+        const districtInput = $("#district");
+        const talukaInput = $("#taluka");
+        const villageInput = $("#village");
+        const addressInput = $("#address");
+        const pincodeInput = $("#pincode");
+
+        const display = {
+            name: $("#display-name"),
+            mobile: $("#display-mobile"),
+            email: $("#display-email"),
+            alt_mobile: $("#display-alt_mobile"),
+            district: $("#display-district"),
+            taluka: $("#display-taluka"),
+            village: $("#display-village"),
+            address: $("#display-address"),
+            pincode: $("#display-pincode")
+        };
+
+        // Check if there is a stored address
+        const storedData = localStorage.getItem("addressData");
+        if (storedData) {
+            const addressData = JSON.parse(storedData);
+            // Populate the input fields with the stored data
+            nameInput.val(addressData.name);
+            mobileInput.val(addressData.mobile);
+            emailInput.val(addressData.email);
+            altMobileInput.val(addressData.alt_mobile);
+            districtInput.val(addressData.district);
+            talukaInput.val(addressData.taluka);
+            villageInput.val(addressData.village);
+            addressInput.val(addressData.address);
+            pincodeInput.val(addressData.pincode);
+            displayAddressDetails(addressData);
+        } else {
+            addressForm.show();
+            addressDisplay.hide();
+        }
+
+        saveButton.click(function() {
+            // Implement your validation here
+            const name = nameInput.val();
+            const mobile = mobileInput.val();
+            const email = emailInput.val();
+            const altMobile = altMobileInput.val();
+            const district = districtInput.val();
+            const taluka = talukaInput.val();
+            const village = villageInput.val();
+            const address = addressInput.val();
+            const pincode = pincodeInput.val();
+
+            // Store the address in a single object
+            const addressData = {
+                name,
+                mobile,
+                email,
+                alt_mobile: altMobile,
+                district,
+                taluka,
+                village,
+                address,
+                pincode
+            };
+
+            // Store the address object in localStorage
+            localStorage.setItem("addressData", JSON.stringify(addressData));
+
+            // Display the saved address
+            displayAddressDetails(addressData);
+        });
+
+        function displayAddressDetails(addressData) {
+            display.name.text(addressData.name);
+            display.mobile.text(addressData.mobile);
+            display.email.text(addressData.email);
+            display.alt_mobile.text(addressData.alt_mobile);
+            display.district.text(addressData.district);
+            display.taluka.text(addressData.taluka);
+            display.village.text(addressData.village);
+            display.address.text(addressData.address);
+            display.pincode.text(addressData.pincode);
+
+            addressForm.hide();
+            addressDisplay.show();
+        }
+
+        function clearAddress() {
+            nameInput.val("");
+            mobileInput.val("");
+            emailInput.val("");
+            altMobileInput.val("");
+            districtInput.val("");
+            talukaInput.val("");
+            villageInput.val("");
+            addressInput.val("");
+            pincodeInput.val("");
+
+            localStorage.removeItem("addressData");
+        }
+
+        editButton.click(function() {
+            addressForm.show();
+            addressDisplay.hide();
+        });
+
+        deleteButton.click(function() {
+            clearAddress();
+            addressForm.show();
+            addressDisplay.hide();
+        });
+    </script>
 </body>
 </html>
