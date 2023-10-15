@@ -4,22 +4,6 @@ require_once './dbconnection.php'; // Include your database connection script
 // Check if the user's ID (you may need to adjust how you retrieve this)
 $user_id = $_COOKIE['user_id'];
 
-// Check if the user has an existing address
-$sql = "SELECT * FROM `user_addresses` WHERE `user_id` = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    // User has an existing address, fetch it
-    $addressData = $result->fetch_assoc();
-} else {
-    // User does not have an address, set $addressData to null
-    $addressData = null;
-}
-
-$stmt->close();
 
 
 ?>
